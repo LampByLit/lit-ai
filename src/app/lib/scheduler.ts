@@ -146,7 +146,7 @@ async function runSummarizerJob() {
     console.log('Initializing summarizer with API key');
     const summarizer = new Summarizer(apiKey);
     console.log('Running analysis...');
-    const results = await summarizer.analyze(threadsToAnalyze);
+    const results = await summarizer.summarize(threadsToAnalyze);
     console.log(`Analysis complete: ${results.articles.batchStats.totalThreads} threads analyzed`);
     
     return results;
