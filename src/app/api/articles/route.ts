@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { ArticleAnalysis } from '@/app/types/article';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const articlesDir = path.resolve(paths.dataDir, 'articles');
     const files = await fs.readdir(articlesDir);

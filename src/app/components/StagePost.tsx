@@ -3,6 +3,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import styles from './StagePost.module.css';
+import useSWR from 'swr';
 
 interface Get {
   postNumber: string;
@@ -93,144 +94,34 @@ function formatCheckCount(count: number): string {
 }
 
 export default function StagePost({ position, cardType = 'gets' }: StagePostProps) {
-  const [data, setData] = useState<Get | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data: post, error, isLoading } = useSWR<Post>(
+    position === 'top' ? '/api/top-post' : '/api/latest-post',
+    fetcher
+  );
 
-  useEffect(() => {
-    let isMounted = true;
+  if (error) return <div className={styles.error}>Failed to load post</div>;
+  if (isLoading || !post) return <div className={styles.loading}>Loading...</div>;
 
-    const fetchData = async () => {
-      try {
-        if (cardType === 'meds') {
-          const response = await fetch('/api/meds');
-          if (!response.ok) {
-            throw new Error('Failed to fetch meds data');
-          }
-          const results = await response.json();
-          
-          if (!Array.isArray(results) || results.length === 0) {
-            throw new Error('Invalid meds data structure');
-          }
+  const formattedDate = new Date(post.time * 1000).toLocaleString();
 
-          // Select post based on position
-          const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
-          const selectedPost = results[postIndex];
-
-          if (!selectedPost || !selectedPost.no) {
-            throw new Error(`No post data for position ${position}`);
-          }
-
-          if (isMounted) {
-            setData({
-              postNumber: selectedPost.no.toString(),
-              comment: selectedPost.com || '',
-              checkCount: 0,
-              getType: 'Meds Post',
-              hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
-              filename: selectedPost.filename,
-              ext: selectedPost.ext,
-              tim: selectedPost.tim,
-              sub: selectedPost.sub,
-              resto: selectedPost.resto,
-              threadId: selectedPost.threadId
-            });
-            setError(null);
-          }
-          return;
-        }
-
-        if (cardType === 'insights') {
-          const response = await fetch('/api/reply');
-          if (!response.ok) {
-            throw new Error('Failed to fetch reply data');
-          }
-          const results = await response.json();
-          
-          if (!Array.isArray(results) || results.length === 0) {
-            throw new Error('Invalid reply data structure');
-          }
-
-          // Log the position and selected post for debugging
-          const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
-          const selectedPost = results[postIndex];
-          console.log(`Position: ${position}, Selected post:`, selectedPost?.no);
-
-          if (!selectedPost || !selectedPost.no) {
-            throw new Error(`No post data for position ${position}`);
-          }
-
-          if (isMounted) {
-            setData({
-              postNumber: selectedPost.no.toString(),
-              comment: selectedPost.com || '',
-              checkCount: selectedPost.replies || 0,
-              getType: 'Most Replied',
-              hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
-              filename: selectedPost.filename,
-              ext: selectedPost.ext,
-              tim: selectedPost.tim,
-              sub: selectedPost.sub,
-              resto: selectedPost.resto,
-              threadId: selectedPost.threadId
-            });
-            setError(null);
-          }
-          return;
-        }
-
-        // For GETs card, fetch GET data
-        const response = await fetch('/api/significant-gets');
-        if (!response.ok) {
-          throw new Error('Failed to fetch GET data');
-        }
-        const result = await response.json();
-        if (isMounted) {
-          setData(position === 'top' ? result.getOne : result.getTwo);
-          setError(null);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError('Error fetching data');
-          console.error('Error:', err);
-        }
-      }
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 600000); // Refresh every 10 minutes
-
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [position, cardType]);
-
-  if (error) {
-    return <div className={styles.stagePost}>Error loading data</div>;
-  }
-
-  if (!data) {
-    return <div className={styles.stagePost}>Loading...</div>;
-  }
-
-  const archiveUrl = `https://archive.4plebs.org/x/post/${data.postNumber}/`;
-  const parsedComment = data.comment ? parseComment(data.comment) : '';
+  const archiveUrl = `https://archive.4plebs.org/x/post/${post.no}/`;
+  const parsedComment = post.com ? parseComment(post.com) : '';
 
   return (
     <div className={styles.stagePost}>
       <div className={styles.header}>
         <span className={styles.name}>Anonymous</span>
         <a 
-          href={`https://archive.4plebs.org/x/post/${data.postNumber}/`}
+          href={`https://archive.4plebs.org/x/post/${post.no}/`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.postNumber}
         >
-          No.{data.postNumber}
+          No.{post.no}
         </a>
       </div>
       <div className={styles.comment}>
-        {data.hasImage && (
+        {post.tim && (
           <span className={styles.greentext}>&gt;pic related</span>
         )}
         {parsedComment || <span className={styles.placeholderComment}>&gt;pic related</span>}
@@ -238,14 +129,14 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
       <div className={styles.footer}>
         {cardType === 'insights' ? (
           <span className={styles.checkCount}>
-            {data.checkCount} {data.checkCount === 1 ? 'Reply' : 'Replies'}
+            {post.replies} {post.replies === 1 ? 'Reply' : 'Replies'}
           </span>
         ) : (
           <>
             <span className={styles.getType}>
-              {data.getType.charAt(0).toUpperCase() + data.getType.slice(1).toLowerCase()} •
+              {post.getType.charAt(0).toUpperCase() + post.getType.slice(1).toLowerCase()} •
             </span>
-            <span className={styles.checkCount}>{formatCheckCount(data.checkCount)}</span>
+            <span className={styles.checkCount}>{formatCheckCount(post.replies)}</span>
           </>
         )}
       </div>

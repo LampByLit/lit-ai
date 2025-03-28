@@ -136,8 +136,8 @@ export function ArticleCard({ article: propArticle, index = 0 }: ArticleCardProp
   if (error) return <div className={styles.error}>{error}</div>;
   if (!article) return <div className={styles.loading}>Loading...</div>;
 
-  const { headline, article: content, delusionalStats } = article;
-  const { analyzedComments, delusionalComments, percentage } = delusionalStats;
+  const { headline, article: content } = article;
+  const { analyzedComments } = article.delusionalStats;
 
   return (
     <Card 

@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { DelusionalTrend } from '@/app/types/delusional';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const trendsPath = path.resolve(paths.dataDir, 'analysis', 'delusional-trends.json');
     const content = await fs.readFile(trendsPath, 'utf-8');

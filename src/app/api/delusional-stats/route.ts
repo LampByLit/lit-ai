@@ -4,100 +4,95 @@ import fs from 'fs/promises';
 import { paths } from '@/app/utils/paths';
 
 interface DelusionalStats {
-  level: 'low' | 'medium' | 'high' | 'extreme';
-  percentage: number;
-  trend: {
-    direction: 'up' | 'down' | 'stable';
-    amount: number;
+  statistics: {
+    analyzedComments: number;
+    delusionalComments: number;
+    percentage: number;
   };
+  generatedAt: number;
 }
 
-function determineLevel(percentage: number): DelusionalStats['level'] {
-  if (percentage >= 30) return 'extreme';
-  if (percentage >= 20) return 'high';
-  if (percentage >= 10) return 'medium';
-  return 'low';
-}
+type TrendDirection = 'up' | 'down' | 'stable';
 
-function calculateTrend(currentPercentage: number, previousPercentages: number[]) {
-  if (previousPercentages.length === 0) {
-    return { direction: 'stable' as const, amount: 0 };
-  }
-
-  const avgPrevious = previousPercentages.reduce((a, b) => a + b, 0) / previousPercentages.length;
-  const difference = currentPercentage - avgPrevious;
-  const direction = difference > 1 ? 'up' : difference < -1 ? 'down' : 'stable';
-
-  return {
-    direction,
-    amount: Math.abs(difference)
-  };
+interface TrendInfo {
+  direction: TrendDirection;
+  amount: number;
 }
 
 export async function GET() {
   try {
-    console.log('=== Delusional Stats API Debug Info ===');
-
-    // Load the latest analysis file
-    const latestAnalysisPath = path.resolve(paths.dataDir, 'analysis', 'latest-delusional.json');
-    const latestAnalysisExists = await fs.access(latestAnalysisPath)
-      .then(() => true)
-      .catch(() => false);
-
-    if (!latestAnalysisExists) {
-      console.log('No latest analysis file found');
-      return NextResponse.json({ error: 'No analysis data available' }, { status: 404 });
+    const statsPath = path.resolve(paths.dataDir, 'analysis', 'latest-delusional.json');
+    
+    // Check if file exists
+    try {
+      await fs.access(statsPath);
+    } catch {
+      return NextResponse.json({
+        level: 'low',
+        percentage: 0,
+        trend: {
+          direction: 'stable' as TrendDirection,
+          amount: 0
+        }
+      });
     }
 
-    // Load historical trends
-    const trendsPath = path.resolve(paths.dataDir, 'analysis', 'delusional-trends.json');
-    const trendsExist = await fs.access(trendsPath)
-      .then(() => true)
-      .catch(() => false);
+    // Read current stats
+    const currentStatsRaw = await fs.readFile(statsPath, 'utf-8');
+    const currentStats: DelusionalStats = JSON.parse(currentStatsRaw);
 
-    let previousPercentages: number[] = [];
-    if (trendsExist) {
-      const trendsData = await fs.readFile(trendsPath, 'utf-8');
-      const trends = JSON.parse(trendsData);
-      previousPercentages = trends
-        .slice(-6) // Get last 6 entries
-        .map((t: any) => t.percentage);
+    // Read previous stats if they exist
+    const previousStatsPath = path.resolve(paths.dataDir, 'analysis', 'previous-delusional.json');
+    let previousStats: DelusionalStats | null = null;
+    
+    try {
+      const previousStatsRaw = await fs.readFile(previousStatsPath, 'utf-8');
+      previousStats = JSON.parse(previousStatsRaw);
+    } catch {
+      // Previous stats don't exist, that's okay
     }
-
-    // Load and parse the latest analysis
-    const latestAnalysisData = await fs.readFile(latestAnalysisPath, 'utf-8');
-    const latestAnalysis = JSON.parse(latestAnalysisData);
-
-    // Calculate current percentage
-    const { analyzedComments = 0, delusionalComments = 0 } = latestAnalysis.statistics || {};
-    const currentPercentage = analyzedComments > 0 
-      ? (delusionalComments / analyzedComments) * 100 
-      : 0;
 
     // Calculate trend
-    const trend = calculateTrend(currentPercentage, previousPercentages);
-
-    // Determine level based on percentage
-    const level = determineLevel(currentPercentage);
-
-    // Prepare response
-    const stats: DelusionalStats = {
-      level,
-      percentage: currentPercentage,
-      trend: {
-        direction: trend.direction as DelusionalStats['trend']['direction'],
-        amount: trend.amount
-      }
+    const trend: TrendInfo = {
+      direction: 'stable',
+      amount: 0
     };
 
-    console.log('Returning stats:', stats);
-    return NextResponse.json(stats);
+    if (previousStats) {
+      const diff = currentStats.statistics.percentage - previousStats.statistics.percentage;
+      trend.direction = diff > 0 ? 'up' : diff < 0 ? 'down' : 'stable';
+      trend.amount = Math.abs(diff);
+    }
+
+    // Determine level based on percentage
+    let level: 'low' | 'medium' | 'high' | 'extreme';
+    const percentage = currentStats.statistics.percentage;
+
+    if (percentage < 25) {
+      level = 'low';
+    } else if (percentage < 50) {
+      level = 'medium';
+    } else if (percentage < 75) {
+      level = 'high';
+    } else {
+      level = 'extreme';
+    }
+
+    return NextResponse.json({
+      level,
+      percentage,
+      trend
+    });
 
   } catch (error) {
-    console.error('Error fetching delusional stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch delusional statistics' },
-      { status: 500 }
-    );
+    console.error('Error in delusional-stats route:', error);
+    return NextResponse.json({
+      level: 'low',
+      percentage: 0,
+      trend: {
+        direction: 'stable' as TrendDirection,
+        amount: 0
+      }
+    });
   }
 } 

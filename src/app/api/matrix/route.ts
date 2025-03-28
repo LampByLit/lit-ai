@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { DelusionalMatrix } from '@/app/types/delusional';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const matrixPath = path.resolve(paths.dataDir, 'analysis', 'delusional.json');
     const content = await fs.readFile(matrixPath, 'utf-8');
