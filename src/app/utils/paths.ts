@@ -92,6 +92,8 @@ export async function ensureDirectories(): Promise<void> {
       paths.summariesDir,
       paths.analysisDir,
       paths.xposterDir,
+      paths.mediaDir,
+      paths.mediaOpDir,
       path.resolve(paths.analysisDir, 'get'),
       path.resolve(paths.analysisDir, 'reply'),
       path.resolve(paths.analysisDir, 'link'),
@@ -121,7 +123,10 @@ export async function validateDirectories(): Promise<boolean> {
       paths.dataDir,
       paths.threadsDir, 
       paths.summariesDir,
-      paths.analysisDir
+      paths.analysisDir,
+      paths.mediaDir,
+      paths.mediaOpDir,
+      paths.xposterDir
     ];
 
     // Validate all directories in parallel
