@@ -23,59 +23,25 @@ logPathInfo('Data Directory', DATA_DIR);
 logPathInfo('Process CWD', process.cwd());
 
 // Define all application paths
-export const paths = {
-  // Base data directory (always /data in Railway)
-  dataDir: DATA_DIR,
-  
-  // Thread data storage
-  threadsDir: path.resolve(DATA_DIR, 'threads'),
-  
-  // Summary data storage
-  summariesDir: path.resolve(DATA_DIR, 'summaries'),
-  
-  // Analysis data storage
-  analysisDir: path.resolve(DATA_DIR, 'analysis'),
-  
-  // Analysis specific paths
-  bigPicturePath: path.resolve(DATA_DIR, 'analysis', 'big-picture.json'),
-  trendsPath: path.resolve(DATA_DIR, 'analysis', 'antisemitism-trends.json'),
-
-  // Media storage
-  mediaDir: path.resolve(DATA_DIR, 'media'),
-  mediaOpDir: path.resolve(DATA_DIR, 'media', 'OP'),
-  
-  // X poster storage
-  xposterDir: path.resolve(DATA_DIR, 'xposter'),
-  
-  // Helper to get thread file path by ID
-  threadFile: (threadId: string) => path.resolve(DATA_DIR, 'threads', `${threadId}.json`),
-  
-  // Helper to get summary file path by ID
-  summaryFile: (threadId: string) => path.resolve(DATA_DIR, 'summaries', `${threadId}.json`),
-  
-  // Helper to get analyzer results file path
-  analyzerResultsFile: (analyzer: string) => path.resolve(DATA_DIR, 'analysis', analyzer, 'results.json')
-} as const;
-
-// Add type definition for paths
-export type Paths = {
+export interface Paths {
   dataDir: string;
   threadsDir: string;
   summariesDir: string;
   analysisDir: string;
-  bigPicturePath: string;
-  trendsPath: string;
   mediaDir: string;
   mediaOpDir: string;
-  xposterDir: string;
-  threadFile: (threadId: string) => string;
-  summaryFile: (threadId: string) => string;
-  analyzerResultsFile: (analyzer: string) => string;
-};
+  logsDir: string;
+}
 
-// Ensure paths matches the type definition
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _typeCheck: Paths = paths;
+export const paths: Paths = {
+  dataDir: DATA_DIR,
+  threadsDir: path.resolve(DATA_DIR, 'threads'),
+  summariesDir: path.resolve(DATA_DIR, 'summaries'),
+  analysisDir: path.resolve(DATA_DIR, 'analysis'),
+  mediaDir: path.resolve(DATA_DIR, 'media'),
+  mediaOpDir: path.resolve(DATA_DIR, 'media-op'),
+  logsDir: path.resolve(DATA_DIR, 'logs'),
+};
 
 /**
  * Ensures all required directories exist
@@ -89,9 +55,9 @@ export async function ensureDirectories(): Promise<void> {
       paths.threadsDir,
       paths.summariesDir,
       paths.analysisDir,
-      paths.xposterDir,
       paths.mediaDir,
       paths.mediaOpDir,
+      paths.logsDir,
       path.resolve(paths.analysisDir, 'get'),
       path.resolve(paths.analysisDir, 'reply'),
       path.resolve(paths.analysisDir, 'link'),
@@ -119,12 +85,12 @@ export async function validateDirectories(): Promise<boolean> {
     // Check if directories exist and are writable
     const directories = [
       paths.dataDir,
-      paths.threadsDir, 
+      paths.threadsDir,
       paths.summariesDir,
       paths.analysisDir,
       paths.mediaDir,
       paths.mediaOpDir,
-      paths.xposterDir
+      paths.logsDir,
     ];
 
     // Validate all directories in parallel

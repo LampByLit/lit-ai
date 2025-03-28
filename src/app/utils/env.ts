@@ -8,10 +8,6 @@ export const env = {
   RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT as string | undefined,
   DATA_DIR: process.env.DATA_DIR as string | undefined,
   DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY as string | undefined,
-  X_API_KEY: process.env.X_API_KEY as string | undefined,
-  X_API_KEY_SECRET: process.env.X_API_KEY_SECRET as string | undefined,
-  X_ACCESS_TOKEN: process.env.X_ACCESS_TOKEN as string | undefined,
-  X_ACCESS_TOKEN_SECRET: process.env.X_ACCESS_TOKEN_SECRET as string | undefined,
   SKIP_DATA_CLEANUP: process.env.SKIP_DATA_CLEANUP as string | undefined,
 } as const;
 
@@ -23,6 +19,7 @@ export type Env = typeof env;
  */
 export function validateEnv(): void {
   const required = ['DEEPSEEK_API_KEY'];
+  
   const missing = required.filter(key => !env[key as keyof typeof env]);
   
   if (missing.length > 0) {
