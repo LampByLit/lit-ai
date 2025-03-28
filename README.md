@@ -1,23 +1,38 @@
-# Pol-AI
+# xpara-ai 🔮
 
-A Next.js application for analyzing online discourse using AI. The system scrapes content, generates summaries, and performs antisemitism analysis using the DeepSeek API.
+AI-powered analysis and summarization tool for 4chan's /x/ paranormal board. This tool scrapes, analyzes, and summarizes discussions about paranormal phenomena, conspiracy theories, and unexplained events.
 
-## Features
+## Features 🌟
 
-- Thread scraping and data collection
-- AI-powered content summarization
-- Antisemitism matrix analysis
-  - Theme identification
-  - Statistical analysis
-  - 48-hour trend tracking
-- Web interface for monitoring and control
+- Real-time scraping of 4chan's /x/ board
+- AI-powered summarization of threads using DeepSeek AI
+- Content analysis and trend detection
+- Material Design UI for easy navigation
+- Automated data collection and processing
+- Persistent data storage using Railway Volumes
 
-## Setup
+## Tech Stack 💻
+
+- Next.js 15.2 with App Router
+- TypeScript
+- Material Design UI
+- Railway.app deployment
+- DeepSeek AI for summarization
+
+## Getting Started 🚀
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- DeepSeek AI API key
+
+### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/pol-ai.git
-cd pol-ai
+git clone https://github.com/hxkm/xpara-ai.git
+cd xpara-ai
 ```
 
 2. Install dependencies:
@@ -25,68 +40,64 @@ cd pol-ai
 npm install
 ```
 
-3. Create a `.env.local` file with your DeepSeek API key:
+3. Create a `.env.local` file:
 ```env
 DEEPSEEK_API_KEY=your_api_key_here
-DEEPSEEK_MODEL=deepseek-chat
-DEEPSEEK_TEMPERATURE=1.0
+DATA_DIR=./data
 ```
 
-4. Create required directories:
-```bash
-mkdir -p data/threads data/analysis
-```
-
-## Usage
-
-### Development
-
-Run the development server:
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
 ### Scripts
 
-- `npm run scrape` - Run the thread scraper
-- `npm run summarize` - Generate summaries and analysis
-- `npm run clean` - Clean up old data
-- `npm run test:matrix` - Test the antisemitism matrix analyzer
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run scrape` - Run the /x/ board scraper
+- `npm run summarize` - Generate summaries for collected threads
+- `npm run schedule` - Run scheduled tasks
+- `npm run cleanup` - Clean up data directories
 
-### Production
+## Project Structure 📁
 
-Build and start the production server:
-```bash
-npm run build
-npm start
+```
+/
+├── app/
+│   ├── components/    # React components
+│   ├── lib/          # Core functionality
+│   ├── utils/        # Utility functions
+│   └── types/        # TypeScript types
+├── data/            # Persistent storage
+│   ├── threads/     # Raw thread data
+│   ├── summaries/   # AI-generated summaries
+│   └── analysis/    # Analysis results
+├── scripts/         # Utility scripts
+└── public/          # Static assets
 ```
 
-## Project Structure
+## Deployment 🚀
 
-- `/src/app` - Next.js application code
-  - `/api` - API routes
-  - `/components` - React components
-  - `/lib` - Core functionality
-    - `/analyzers` - Analysis modules
-    - `/scraper` - Data collection
-  - `/types` - TypeScript type definitions
-  - `/utils` - Utility functions
+This project is designed to be deployed on Railway.app. The deployment process is automated through GitHub integration.
 
-## Data Management
+### Railway Configuration
 
-- Thread data is stored in `/data/threads`
-- Analysis results are stored in `/data/analysis`
-- Trend data is automatically cleaned after 48 hours
-- File size limits and rotation are implemented for data management
+- Uses Nixpacks for builds
+- Requires a persistent volume mounted at `/data`
+- Environment variables must be configured in Railway dashboard
 
-## Contributing
+## Contributing 🤝
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+## License 📄
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments 🙏
+
+- Built with Next.js
+- Powered by DeepSeek AI
+- Deployed on Railway.app

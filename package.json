@@ -1,6 +1,7 @@
 {
-  "name": "pol-ai",
+  "name": "xpara-ai",
   "version": "0.1.0",
+  "description": "AI-powered analysis and summarization tool for 4chan's /x/ paranormal board",
   "private": true,
   "scripts": {
     "dev": "next dev",
