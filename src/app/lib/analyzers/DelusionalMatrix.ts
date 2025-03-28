@@ -6,7 +6,7 @@ import path from 'path';
 import fs from 'fs/promises';
 
 // Constants for data management
-const HOURS_TO_KEEP = 48; // Keep 48 hours of data
+const HOURS_TO_KEEP = 48; // Already set to 48 hours (2 days)
 const MAX_TRENDS_PER_HOUR = 3; // Maximum 3 data points per hour (since we run daily)
 const MAX_STORED_TRENDS = HOURS_TO_KEEP * MAX_TRENDS_PER_HOUR; // 144 total possible data points
 const TREND_INTERVAL = 60 * 60 * 1000; // Minimum 1 hour between updates since we run daily

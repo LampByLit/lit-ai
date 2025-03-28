@@ -19,7 +19,7 @@ const MEDIA_BASE_URL = 'https://i.4cdn.org/x';
 
 // Configuration
 const MAX_THREADS_PER_CATEGORY = 25; // Increased to capture more paranormal discussions
-const THREAD_AGE_LIMIT_HOURS = 72; // Extended to 72 hours since /x/ threads tend to develop slower
+const THREAD_AGE_LIMIT_HOURS = 48; // Changed to 48 hours (2 days) to match retention policy
 
 // User agents to rotate through
 const USER_AGENTS = [
