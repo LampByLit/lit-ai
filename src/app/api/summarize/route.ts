@@ -59,7 +59,7 @@ export async function POST() {
     console.log('Initializing summarizer...');
     const summarizer = new Summarizer(apiKey);
     console.log('Starting analysis...');
-    const { articles, matrix, bigPicture } = await summarizer.analyze(threadsToAnalyze);
+    const { articles, matrix, bigPicture } = await summarizer.summarize(threadsToAnalyze);
     console.log('Analysis complete');
 
     // Save results

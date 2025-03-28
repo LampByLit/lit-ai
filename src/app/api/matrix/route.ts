@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { paths } from '@/app/utils/paths';
 import path from 'path';
 import fs from 'fs/promises';

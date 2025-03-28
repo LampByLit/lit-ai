@@ -49,18 +49,6 @@ function toTitleCase(str: string) {
   }).join(' ');
 }
 
-function formatArticleText(text: string) {
-  // Split by quotes but keep the quotes in the result
-  const parts = text.split(/(".*?")/g);
-  return parts.map((part, index) => {
-    if (part.startsWith('"') && part.endsWith('"')) {
-      // If it's a quote, wrap it in bold and italic styling
-      return <strong key={index}><em>{part}</em></strong>;
-    }
-    return part;
-  });
-}
-
 function FitText({ text, threadId }: { text: string; threadId: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLAnchorElement>(null);
