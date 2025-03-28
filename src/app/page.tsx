@@ -9,9 +9,6 @@ import StagePost from './components/StagePost';
 import { Card3 } from './components/Card3';
 import Card4 from './components/Card4';
 import Card6 from './components/Card6';
-import TopLinkDomains from './components/TopLinkDomains';
-import RareFlags from './components/RareFlags';
-import CommonFlags from './components/CommonFlags';
 import ArticleCard from './components/ArticleCard';
 import BigPictureArticle from './components/BigPictureArticle';
 import SparklingLogo from './components/SparklingLogo';
@@ -19,6 +16,7 @@ import { FlippableCard } from './components/FlippableCard';
 import RecentXPosts from './components/RecentXPosts';
 import ChanCatalogView from './components/ChanCatalogView';
 import WarningOverlay from './components/WarningOverlay';
+import { GCPDotCard } from './components/GCPDotCard';
 import styles from './page.module.css';
 
 type CardType = 'content' | 'control' | 'status';
@@ -85,12 +83,7 @@ const CardContent: React.FC<{ card: CardItem }> = ({ card }) => {
         return <Card6 />;
       }
       if (card.id === 'content-6') {
-        return (
-          <>
-            <h2>{card.title}</h2>
-            <TopLinkDomains />
-          </>
-        );
+        return <GCPDotCard title={card.title} />;
       }
       if (card.id === 'content-7') {
         return (
@@ -104,7 +97,9 @@ const CardContent: React.FC<{ card: CardItem }> = ({ card }) => {
         return (
           <>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>{card.title}</h2>
-            <RareFlags />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              {/* Empty card ready for new content */}
+            </div>
           </>
         );
       }
@@ -123,7 +118,9 @@ const CardContent: React.FC<{ card: CardItem }> = ({ card }) => {
         return (
           <>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>{card.title}</h2>
-            <CommonFlags />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              {/* Empty card ready for new content */}
+            </div>
           </>
         );
       }
@@ -195,10 +192,10 @@ export default function Home() {
     title: i === 0 ? 'Antisemitism Per Post' : 
            i === 1 ? 'Most Significant GETs' :
            i === 4 ? 'Key Insights' :
-           i === 6 ? 'Top Link Domains' :
-           i === 8 ? 'Rarest Flags' :
+           i === 6 ? 'Real-time GCP Dot' :
+           i === 8 ? '' :
            i === 9 ? 'Thread Count' :
-           i === 11 ? 'Most Common Flags' :
+           i === 11 ? '' :
            i === 12 ? '' :
            (i >= 13 && i <= 23) || i === 24 ? '' :  // Clear titles for article cards
            `Card ${i + 1}`,
@@ -265,12 +262,15 @@ export default function Home() {
             
             return (
               <Card key={card.id} className={`
+                ${index === 2 ? styles.blackCard : ''}
                 ${index === 3 ? styles.cyanCard : ''}
-                ${index === 4 ? styles.orangeCard : ''}
+                ${(index === 4 || index === 5) ? styles.orangeCard : ''}
                 ${index === 6 ? styles.purpleCard : ''}
                 ${index === 7 ? styles.blackCard : ''}
+                ${index === 8 ? styles.hidden : ''}
                 ${index === 9 ? styles.blackCard : ''}
                 ${index === 10 ? styles.blackCard : ''}
+                ${index === 11 ? styles.hidden : ''}
                 ${index === 12 ? styles.neonGreenCard : ''}
                 ${index === 15 ? styles.brightBlueCard : ''}
                 ${index === 16 ? styles.magentaCard : ''}

@@ -20,7 +20,7 @@ interface Get {
 
 interface StagePostProps {
   position: 'top' | 'middle' | 'bottom';
-  cardType?: 'gets' | 'insights';
+  cardType?: 'gets' | 'insights' | 'meds';
 }
 
 function parseComment(html: string): React.ReactNode {
@@ -61,7 +61,7 @@ function parseComment(html: string): React.ReactNode {
           return (
             <a
               key={index}
-              href={`https://archive.4plebs.org/pol/post/${segment}/`}
+              href={`https://archive.4plebs.org/x/post/${segment}/`}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.postNumber}
@@ -101,6 +101,44 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
 
     const fetchData = async () => {
       try {
+        if (cardType === 'meds') {
+          const response = await fetch('/api/meds');
+          if (!response.ok) {
+            throw new Error('Failed to fetch meds data');
+          }
+          const results = await response.json();
+          
+          if (!Array.isArray(results) || results.length === 0) {
+            throw new Error('Invalid meds data structure');
+          }
+
+          // Select post based on position
+          const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
+          const selectedPost = results[postIndex];
+
+          if (!selectedPost || !selectedPost.no) {
+            throw new Error(`No post data for position ${position}`);
+          }
+
+          if (isMounted) {
+            setData({
+              postNumber: selectedPost.no.toString(),
+              comment: selectedPost.com || '',
+              checkCount: 0,
+              getType: 'Meds Post',
+              hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
+              filename: selectedPost.filename,
+              ext: selectedPost.ext,
+              tim: selectedPost.tim,
+              sub: selectedPost.sub,
+              resto: selectedPost.resto,
+              threadId: selectedPost.threadId
+            });
+            setError(null);
+          }
+          return;
+        }
+
         if (cardType === 'insights') {
           const response = await fetch('/api/reply');
           if (!response.ok) {
@@ -175,7 +213,7 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     return <div className={styles.stagePost}>Loading...</div>;
   }
 
-  const archiveUrl = `https://archive.4plebs.org/pol/post/${data.postNumber}/`;
+  const archiveUrl = `https://archive.4plebs.org/x/post/${data.postNumber}/`;
   const parsedComment = data.comment ? parseComment(data.comment) : '';
 
   return (
@@ -183,7 +221,7 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
       <div className={styles.header}>
         <span className={styles.name}>Anonymous</span>
         <a 
-          href={archiveUrl}
+          href={`https://archive.4plebs.org/x/post/${data.postNumber}/`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.postNumber}

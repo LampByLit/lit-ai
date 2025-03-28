@@ -31,10 +31,10 @@
   margin: 0;
   flex-grow: 1;
   text-align: justify;
-  background: white;
+  background: #333333;
   padding: 1rem;
   border-radius: 4px;
-  color: black !important;
+  color: white !important;
 }
 
 .stats {

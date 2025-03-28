@@ -4,10 +4,8 @@ import { AnalyzerResult } from '../../../types/interfaces';
  * Categories for different types of media files
  */
 export enum MediaCategory {
-  PEPE = 'pepe',
-  JAK = 'jak',
-  GIF = 'gif',
-  RANDOM = 'random'
+  OP = 'op',           // Original post images
+  RANDOM = 'random'    // Random images from replies
 }
 
 /**

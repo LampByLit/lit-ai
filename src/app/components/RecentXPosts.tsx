@@ -9,11 +9,39 @@ const RecentXPosts = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Hide the info icon when component mounts
+    // Hide the info icon when component mounts and add dark mode styles
     const style = document.createElement('style');
     style.textContent = `
       .react-tweet-theme a[href*="help.x.com"] {
         display: none !important;
+      }
+      
+      /* Dark mode styles for Tweet */
+      .react-tweet {
+        background: #1a1a1a !important;
+        border: 1px solid #333 !important;
+        color: #fff !important;
+      }
+      
+      .react-tweet-theme {
+        background: #1a1a1a !important;
+      }
+
+      .react-tweet * {
+        color: #fff !important;
+      }
+
+      .react-tweet a {
+        color: #1DA1F2 !important;
+      }
+
+      .react-tweet-theme button {
+        background: #333 !important;
+        border: 1px solid #444 !important;
+      }
+
+      .react-tweet time {
+        color: #888 !important;
       }
     `;
     document.head.appendChild(style);
@@ -50,10 +78,11 @@ const RecentXPosts = () => {
     return (
       <div style={{
         display: 'flex',
-        background: 'white',
+        background: '#333333',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '2rem'
+        padding: '2rem',
+        color: 'white'
       }}>
         <h2 style={{ 
           fontSize: '1.25rem',
@@ -69,10 +98,11 @@ const RecentXPosts = () => {
     return (
       <div style={{
         display: 'flex',
-        background: 'white',
+        background: '#333333',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '2rem'
+        padding: '2rem',
+        color: 'white'
       }}>
         <h2 style={{ 
           fontSize: '1.25rem',
@@ -86,19 +116,20 @@ const RecentXPosts = () => {
 
   return (
     <div style={{
-      background: 'white',
-      width: '100%'
+      background: '#333333',
+      width: '100%',
+      color: 'white'
     }}>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '1rem',
-        borderBottom: '1px solid #eee'
+        borderBottom: '1px solid #444'
       }}>
         <h2 style={{ 
           fontSize: '1.25rem',
-          color: '#000000',
+          color: 'white',
           margin: 0
         }}>
           X Bot
@@ -125,9 +156,9 @@ const RecentXPosts = () => {
       <div style={{ padding: '1rem' }}>
         {tweetId ? (
           <div style={{ 
-            background: 'white', 
+            background: '#1a1a1a', 
             borderRadius: '8px',
-            border: '1px solid #eee',
+            border: '1px solid #333',
             padding: '0.75rem'
           }}>
             <Tweet 
@@ -137,7 +168,7 @@ const RecentXPosts = () => {
             <div style={{ 
               marginTop: '0.5rem',
               fontSize: '0.875rem',
-              color: '#666',
+              color: '#888',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
@@ -159,7 +190,7 @@ const RecentXPosts = () => {
                   <path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/>
                 </svg>
               </a>
-              <span style={{ color: '#999', fontSize: '0.75rem' }}>
+              <span style={{ color: '#666', fontSize: '0.75rem' }}>
                 Posted by &amp X Bot
               </span>
             </div>
@@ -167,14 +198,14 @@ const RecentXPosts = () => {
         ) : (
           <div style={{ 
             textAlign: 'center', 
-            color: '#666',
+            color: '#888',
             padding: '2rem',
-            border: '1px dashed #ccc',
+            border: '1px dashed #444',
             borderRadius: '8px',
-            background: '#f8f9fa'
+            background: '#1a1a1a'
           }}>
             <p style={{ marginBottom: '1rem' }}>No recent post available</p>
-            <p style={{ fontSize: '0.875rem', color: '#999' }}>
+            <p style={{ fontSize: '0.875rem', color: '#666' }}>
               Check back soon for new updates
             </p>
           </div>

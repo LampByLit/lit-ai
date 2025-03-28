@@ -1,25 +1,24 @@
 import { AnalyzerResult } from '../../../types/interfaces';
 
 /**
- * Statistics for a tracked term
+ * Structure for a post containing "meds"
  */
-export interface TermStats {
-  term: string;           // The term being tracked
-  count: number;          // Current occurrence count
-  previousCount: number;  // Count from previous scrape
-  percentChange: number;  // Percentage change from previous count
-  lastSeen: number;      // Timestamp of last occurrence
+export interface MedsPost {
+  postId: number;        // ID of the post
+  threadId: number;      // ID of the thread containing this post
+  comment: string;       // The post content
+  timestamp: number;     // When the post was made
+  name: string;         // Name of the poster
 }
 
 /**
- * Result structure for Slur analysis
+ * Result structure for Meds analysis
  */
 export interface SlurAnalyzerResult extends AnalyzerResult {
-  termStats: TermStats[];  // Statistics for each tracked term
+  medsPosts: MedsPost[];  // Posts containing "meds"
   metadata: {
     totalPostsAnalyzed: number;     // Total number of posts processed
-    postsWithTerms: number;         // Number of posts containing tracked terms
-    totalTermsFound: number;        // Total occurrences of all terms
+    postsWithMeds: number;          // Number of posts containing "meds"
     lastAnalysis: number;           // Timestamp of previous analysis
   };
 } 

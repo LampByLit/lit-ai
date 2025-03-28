@@ -1,5 +1,5 @@
 .stagePost {
-  background-color: #fff;
+  background-color: #1a1a1a;
   padding: 8px 12px;
   margin: 8px 0;
   width: 400px;
@@ -21,25 +21,25 @@
 }
 
 .postNumber {
-  color: #000;
+  color: #e0e0e0;
   text-decoration: underline;
-  text-decoration-color: rgba(0, 0, 0, 0.3);
+  text-decoration-color: rgba(255, 255, 255, 0.3);
   cursor: pointer;
 }
 
 .postNumber:hover {
-  text-decoration-color: rgba(0, 0, 0, 0.8);
+  text-decoration-color: rgba(255, 255, 255, 0.8);
 }
 
 .comment {
-  color: #000;
+  color: #e0e0e0;
   margin: 4px 0;
   word-wrap: break-word;
   white-space: pre-wrap;
   text-align: justify;
   text-justify: inter-word;
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
+  border-top: 1px solid #333;
+  border-bottom: 1px solid #333;
   padding: 6px 0;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -69,11 +69,11 @@
   align-items: center;
   gap: 8px;
   margin-top: 4px;
-  color: #666;
+  color: #888;
   font-size: 11px;
 }
 
 .getType, .checkCount {
-  color: #666;
+  color: #888;
   font-size: 11px;
 } 

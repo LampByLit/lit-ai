@@ -1,5 +1,5 @@
 /**
- * 4chan /pol/ Scraper
+ * 4chan /x/ Scraper
  * 
  * This module handles fetching thread data from 4chan's API
  * following their rate limiting and API requirements.
@@ -14,11 +14,12 @@ import { Thread, Post, isAxiosError } from '../../types/interfaces';
 import { initializeAnalyzers, analyzeThreads, purgeOldResults } from '../analyzers';
 
 // Base URL for 4chan API
-const API_BASE_URL = 'https://a.4cdn.org/pol';
-const MEDIA_BASE_URL = 'https://i.4cdn.org/pol';
+const API_BASE_URL = 'https://a.4cdn.org/x';
+const MEDIA_BASE_URL = 'https://i.4cdn.org/x';
 
 // Configuration
-const MAX_THREADS_PER_CATEGORY = 20;
+const MAX_THREADS_PER_CATEGORY = 25; // Increased to capture more paranormal discussions
+const THREAD_AGE_LIMIT_HOURS = 72; // Extended to 72 hours since /x/ threads tend to develop slower
 
 // User agents to rotate through
 const USER_AGENTS = [
@@ -139,11 +140,17 @@ async function getTargetThreads(): Promise<Thread[]> {
     
     // Flatten all threads from all pages
     const allThreads = catalog.flatMap(page => page.threads)
-      .filter(thread => !thread.sticky); // Exclude stickied threads
+      .filter(thread => !thread.sticky && !thread.closed); // Exclude stickied and closed threads
     
     // Get top threads by replies
     const topThreads = [...allThreads]
       .sort((a, b) => (b.replies || 0) - (a.replies || 0))
+      .slice(0, MAX_THREADS_PER_CATEGORY);
+    
+    // Get threads with images (paranormal evidence, etc.)
+    const imageThreads = [...allThreads]
+      .filter(thread => thread.tim && !thread.ext?.toLowerCase().match(/\.(webm|mp4|mov|avi|wmv|flv)$/))
+      .sort((a, b) => b.no - a.no)
       .slice(0, MAX_THREADS_PER_CATEGORY);
     
     // Get newest threads
@@ -153,7 +160,7 @@ async function getTargetThreads(): Promise<Thread[]> {
     
     // Combine and deduplicate threads
     const uniqueThreads = Array.from(new Map(
-      [...topThreads, ...newestThreads].map(thread => [thread.no, thread])
+      [...topThreads, ...imageThreads, ...newestThreads].map(thread => [thread.no, thread])
     ).values());
     
     // Sort by post number (descending)
@@ -285,61 +292,38 @@ function getThreadAgeHours(thread: Thread): number {
 }
 
 /**
- * Clean up threads older than 48 hours
+ * Clean up old threads that are no longer active
  */
 async function cleanOldThreads(): Promise<void> {
-  console.log('Cleaning up old thread files...');
-  
   try {
-    // Don't clean if we're within 1 hour of the summarizer run (23:30 UTC)
-    const now = new Date();
-    const hour = now.getUTCHours();
-    const minute = now.getUTCMinutes();
+    const files = await fs.promises.readdir(paths.threadsDir);
     
-    // If we're between 22:30 and 23:30 UTC, skip cleanup
-    if (hour === 22 && minute >= 30 || hour === 23 && minute < 30) {
-      console.log('Skipping cleanup as we are approaching summarizer run time');
-      return;
-    }
-
-    const threadFiles = fs.readdirSync(paths.threadsDir)
-      .filter(file => file.endsWith('.json'));
-    
-    let removedCount = 0;
-    const MAX_THREAD_AGE_HOURS = 48; // Increased from 24 to 48 hours
-    
-    for (const file of threadFiles) {
-      const filePath = path.resolve(paths.threadsDir, file);
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
       
+      const filePath = path.join(paths.threadsDir, file);
       try {
-        // Read and parse the thread file
-        const threadData = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as Thread;
-        const ageHours = getThreadAgeHours(threadData);
+        const data = JSON.parse(await fs.promises.readFile(filePath, 'utf-8'));
+        const ageHours = getThreadAgeHours(data);
         
-        // If the thread is older than our threshold, remove it
-        if (ageHours > MAX_THREAD_AGE_HOURS) {
-          console.log(`Removing old thread file: ${file} (${ageHours.toFixed(1)} hours old)`);
-          fs.unlinkSync(filePath);
-          removedCount++;
+        // Remove threads older than the age limit
+        if (ageHours > THREAD_AGE_LIMIT_HOURS) {
+          console.log(`Removing old thread: ${file} (${ageHours.toFixed(1)} hours old)`);
+          await fs.promises.unlink(filePath);
+          
+          // Also remove associated media
+          const threadId = path.basename(file, '.json');
+          const mediaPath = path.join(paths.mediaDir, 'OP', `${threadId}.jpg`);
+          if (fs.existsSync(mediaPath)) {
+            await fs.promises.unlink(mediaPath);
+          }
         }
       } catch (error) {
-        console.error(`Error processing thread file ${file}:`, error);
-        // If we can't read/parse the file, remove it
-        try {
-          fs.unlinkSync(filePath);
-          removedCount++;
-          console.log(`Removed invalid thread file: ${file}`);
-        } catch {
-          console.error(`Failed to remove invalid thread file: ${file}`);
-        }
+        console.error(`Error processing ${file}:`, error);
       }
     }
-    
-    if (removedCount > 0) {
-      console.log(`Removed ${removedCount} old thread files`);
-    }
   } catch (error) {
-    console.error('Error cleaning old thread files:', error);
+    console.error('Error cleaning old threads:', error);
   }
 }
 
@@ -347,7 +331,7 @@ async function cleanOldThreads(): Promise<void> {
  * Main scraper function
  */
 async function scrape(): Promise<void> {
-  console.log('Starting 4chan /pol/ scraper...');
+  console.log('Starting 4chan /x/ scraper...');
   
   // Ensure our data directories exist
   ensureDirectories();

@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import styles from './GifCarousel.module.css';
+import styles from './ImageCarousel.module.css';
 
-export const GifCarousel = () => {
-  const [currentGifIndex, setCurrentGifIndex] = useState(0);
-  const [gifs, setGifs] = useState<string[]>([]);
+export const ImageCarousel = () => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [images, setImages] = useState<string[]>([]);
 
   // Function to get a random index different from the current one
   const getNextRandomIndex = (currentIndex: number, length: number) => {
@@ -19,34 +19,34 @@ export const GifCarousel = () => {
   };
 
   useEffect(() => {
-    // Fetch the list of GIFs when component mounts
-    const fetchGifs = async () => {
+    // Fetch the list of images when component mounts
+    const fetchImages = async () => {
       try {
-        const response = await fetch('/api/gifs');
+        const response = await fetch('/api/images');
         const data = await response.json();
-        setGifs(data.gifs);
+        setImages(data.images);
         // Set initial random index
-        setCurrentGifIndex(Math.floor(Math.random() * data.gifs.length));
+        setCurrentImageIndex(Math.floor(Math.random() * data.images.length));
       } catch (error) {
-        console.error('Error fetching GIFs:', error);
+        console.error('Error fetching images:', error);
       }
     };
 
-    fetchGifs();
+    fetchImages();
   }, []);
 
   useEffect(() => {
-    if (gifs.length === 0) return;
+    if (images.length === 0) return;
 
-    // Rotate through GIFs randomly every 4 seconds
+    // Rotate through images randomly every 4 seconds
     const interval = setInterval(() => {
-      setCurrentGifIndex(prevIndex => getNextRandomIndex(prevIndex, gifs.length));
+      setCurrentImageIndex(prevIndex => getNextRandomIndex(prevIndex, images.length));
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [gifs]);
+  }, [images]);
 
-  if (gifs.length === 0) {
+  if (images.length === 0) {
     return <div className={styles.container}>Loading...</div>;
   }
 
@@ -54,8 +54,8 @@ export const GifCarousel = () => {
     <div className={styles.container}>
       <div className={styles.imageWrapper}>
         <Image
-          src={`/api/gifs?file=${encodeURIComponent(gifs[currentGifIndex])}`}
-          alt="Rotating GIF"
+          src={`/api/images?file=${encodeURIComponent(images[currentImageIndex])}`}
+          alt="Rotating Image"
           fill
           sizes="(max-width: 768px) 100vw, 400px"
           priority

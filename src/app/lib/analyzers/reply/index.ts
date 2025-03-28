@@ -171,11 +171,24 @@ export class ReplyAnalyzer extends BaseAnalyzer<ReplyAnalyzerResult> {
       // Load existing results
       const existingResults = await this.loadResults();
       
-      // Combine new and existing results
-      const combinedResults = [...existingResults, ...results];
+      // Combine new and existing results, deduplicating by postId
+      const uniqueResults = new Map<number, ReplyAnalyzerResult>();
       
-      // Sort by reply count and keep only the top MAX_RESULTS
-      const topResults = combinedResults
+      // Process existing results first
+      existingResults.forEach(result => {
+        uniqueResults.set(result.postId, result);
+      });
+      
+      // Process new results, overwriting existing ones if newer
+      results.forEach(result => {
+        const existing = uniqueResults.get(result.postId);
+        if (!existing || existing.timestamp < result.timestamp) {
+          uniqueResults.set(result.postId, result);
+        }
+      });
+      
+      // Convert to array, sort by reply count and keep only the top MAX_RESULTS
+      const topResults = Array.from(uniqueResults.values())
         .sort((a, b) => b.replyCount - a.replyCount)
         .slice(0, ReplyAnalyzer.MAX_RESULTS);
       

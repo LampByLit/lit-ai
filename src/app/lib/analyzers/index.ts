@@ -5,8 +5,6 @@ import path from 'path';
 import fs from 'fs';
 import { GetAnalyzer } from './get';
 import { ReplyAnalyzer } from './reply';
-import { LinkAnalyzer } from './link';
-import { GeoAnalyzer } from './geo';
 import { SlurAnalyzer } from './slur';
 import { MediaAnalyzer } from './media';
 import { BaseAnalyzer } from './base';
@@ -31,8 +29,6 @@ export async function initializeAnalyzers(): Promise<void> {
     // Register analyzers in order of execution
     analyzerRegistry.register(new GetAnalyzer());
     analyzerRegistry.register(new ReplyAnalyzer());
-    analyzerRegistry.register(new LinkAnalyzer());
-    analyzerRegistry.register(new GeoAnalyzer());
     analyzerRegistry.register(new SlurAnalyzer());
     analyzerRegistry.register(new MediaAnalyzer()); // Add media analyzer last
 

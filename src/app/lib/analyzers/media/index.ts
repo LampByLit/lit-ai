@@ -8,20 +8,20 @@ import axios from 'axios';
 import crypto from 'crypto';
 
 /**
- * Analyzer for downloading and managing media files
+ * Analyzer for downloading and managing media files from /x/ board
  */
 export class MediaAnalyzer extends BaseAnalyzer<MediaAnalyzerResult> {
   name = 'media';
   description = 'Downloads and manages media files from threads';
 
   // Base URL for 4chan media
-  private static MEDIA_BASE_URL = 'https://i.4cdn.org/pol';
+  private static MEDIA_BASE_URL = 'https://i.4cdn.org/x';
 
-  // Maximum age of files (48 hours in milliseconds)
-  private static MAX_FILE_AGE = 48 * 60 * 60 * 1000;
+  // Maximum age of files (72 hours in milliseconds)
+  private static MAX_FILE_AGE = 72 * 60 * 60 * 1000;
 
   // Maximum number of random images to keep
-  private static MAX_RANDOM_IMAGES = 50;
+  private static MAX_RANDOM_IMAGES = 100;
 
   // Maximum number of recent files to track in results
   private static MAX_RECENT_FILES = 100;
@@ -104,59 +104,44 @@ export class MediaAnalyzer extends BaseAnalyzer<MediaAnalyzerResult> {
   }
 
   /**
-   * Determine media category based on filename and extension
+   * Determine media category based on post and file type
    */
-  private categorizeFile(filename: string, ext: string): MediaCategory | null {
-    const lowerFilename = filename.toLowerCase();
-    const lowerExt = ext.toLowerCase();
-
-    // Skip video files early
-    if (['.webm', '.mp4', '.mov', '.avi', '.wmv', '.flv'].includes(lowerExt)) {
+  private categorizeFile(filename: string, ext: string, isOP: boolean): MediaCategory | null {
+    // Skip video files
+    if (['.webm', '.mp4', '.mov', '.avi', '.wmv', '.flv'].includes(ext.toLowerCase())) {
       return null;
     }
 
-    // Check for GIFs
-    if (lowerExt === '.gif') {
-      return MediaCategory.GIF;
+    // Only accept common image formats
+    if (!['.jpg', '.jpeg', '.png', '.webp'].includes(ext.toLowerCase())) {
+      return null;
     }
 
-    // Check for Pepe images - must explicitly contain 'pepe'
-    if (lowerFilename.includes('pepe')) {
-      return MediaCategory.PEPE;
-    }
-
-    // Check for Jak images - must explicitly contain 'jak'
-    if (lowerFilename.includes('jak')) {
-      return MediaCategory.JAK;
+    // OP images go to the OP category
+    if (isOP) {
+      return MediaCategory.OP;
     }
 
     // For random category - only accept if we haven't hit the limit
-    // and only certain image formats
-    if (['.jpg', '.jpeg', '.png', '.webp'].includes(lowerExt)) {
-      const randomDir = path.resolve(paths.dataDir, 'media', MediaCategory.RANDOM);
-      if (fs.existsSync(randomDir)) {
-        const randomFiles = fs.readdirSync(randomDir);
-        if (randomFiles.length >= MediaAnalyzer.MAX_RANDOM_IMAGES) {
-          return null;
-        }
+    const randomDir = path.resolve(paths.dataDir, 'media', MediaCategory.RANDOM);
+    if (fs.existsSync(randomDir)) {
+      const randomFiles = fs.readdirSync(randomDir);
+      if (randomFiles.length >= MediaAnalyzer.MAX_RANDOM_IMAGES) {
+        return null;
       }
-      return MediaCategory.RANDOM;
     }
-
-    return null;
+    return MediaCategory.RANDOM;
   }
 
   /**
    * Download a file and save it to the appropriate directory
    */
   private async downloadFile(
-    post: Post,
+    post: Partial<Post> & { tim: number; ext: string; filename: string },
     category: MediaCategory,
     threadId: number
   ): Promise<MediaFile | null> {
     try {
-      if (!post.tim || !post.ext || !post.filename) return null;
-
       const url = `${MediaAnalyzer.MEDIA_BASE_URL}/${post.tim}${post.ext}`;
       const response = await axios.get(url, { responseType: 'arraybuffer' });
       
@@ -184,7 +169,7 @@ export class MediaAnalyzer extends BaseAnalyzer<MediaAnalyzerResult> {
         storedName,
         category,
         threadId,
-        postId: post.no,
+        postId: post.no || threadId,
         md5: hash,
         timestamp,
         fileSize: post.fsize || 0,
@@ -194,7 +179,7 @@ export class MediaAnalyzer extends BaseAnalyzer<MediaAnalyzerResult> {
 
       return mediaFile;
     } catch (error) {
-      console.error(`Error downloading file from post ${post.no}:`, error);
+      console.error(`Error downloading file from post ${post.no || 'unknown'}:`, error);
       return null;
     }
   }
@@ -258,102 +243,108 @@ export class MediaAnalyzer extends BaseAnalyzer<MediaAnalyzerResult> {
   }
 
   /**
-   * Process media from all threads
+   * Process a single thread's media
    */
-  async analyze(threads: Thread[]): Promise<MediaAnalyzerResult[]> {
-    console.log('Starting media analysis...');
-    
-    // Initialize directories and load existing hashes
-    await this.initDirectories();
-    await this.loadHashes();
-    
-    const downloadedFiles: MediaFile[] = [];
-    let totalFiles = 0;
-    let duplicatesSkipped = 0;
-    let randomCount = 0;
+  private async processThreadMedia(thread: Thread): Promise<MediaFile[]> {
+    const mediaFiles: MediaFile[] = [];
 
-    // Process each thread
-    for (const thread of threads) {
-      if (!thread.posts) continue;
-
-      // Include OP if it has a file
-      if (thread.tim && thread.ext && thread.filename) {
-        totalFiles++;
-        const opPost = {
-          no: thread.no,
-          resto: 0,
-          time: thread.time,
-          name: thread.name || 'Anonymous',
+    // Process OP image first
+    if (thread.tim && thread.ext && thread.filename) {
+      const category = this.categorizeFile(thread.filename, thread.ext, true);
+      if (category) {
+        const mediaFile = await this.downloadFile({
           tim: thread.tim,
           ext: thread.ext,
           filename: thread.filename,
+          no: thread.no,
           fsize: thread.fsize,
           w: thread.w,
           h: thread.h
-        };
-        const category = this.categorizeFile(thread.filename, thread.ext);
-        
-        // Skip if not categorized or random category is full
-        if (!category || (category === MediaCategory.RANDOM && randomCount >= MediaAnalyzer.MAX_RANDOM_IMAGES)) {
-          continue;
-        }
-
-        const mediaFile = await this.downloadFile(opPost, category, thread.no);
-        
-        if (mediaFile) {
-          downloadedFiles.push(mediaFile);
-          if (category === MediaCategory.RANDOM) randomCount++;
-        } else {
-          duplicatesSkipped++;
-        }
+        }, category, thread.no);
+        if (mediaFile) mediaFiles.push(mediaFile);
       }
+    }
 
-      // Process each post in thread
+    // Process reply images
+    if (thread.posts) {
       for (const post of thread.posts) {
-        if (!post.tim || !post.ext || !post.filename) continue;
-        
-        totalFiles++;
-        const category = this.categorizeFile(post.filename, post.ext);
-        
-        // Skip if not categorized or random category is full
-        if (!category || (category === MediaCategory.RANDOM && randomCount >= MediaAnalyzer.MAX_RANDOM_IMAGES)) {
-          continue;
-        }
-
-        const mediaFile = await this.downloadFile(post, category, thread.no);
-        if (mediaFile) {
-          downloadedFiles.push(mediaFile);
-          if (category === MediaCategory.RANDOM) randomCount++;
-        } else {
-          duplicatesSkipped++;
-        }
-
-        // Early exit if we have enough random images
-        if (randomCount >= MediaAnalyzer.MAX_RANDOM_IMAGES) {
-          break;
+        if (post.tim && post.ext && post.filename) {
+          const category = this.categorizeFile(post.filename, post.ext, false);
+          if (category) {
+            const mediaFile = await this.downloadFile({
+              tim: post.tim,
+              ext: post.ext,
+              filename: post.filename,
+              no: post.no,
+              fsize: post.fsize,
+              w: post.w,
+              h: post.h
+            }, category, thread.no);
+            if (mediaFile) mediaFiles.push(mediaFile);
+          }
         }
       }
     }
 
-    // Get category statistics
-    const categoryStats = await this.getCategoryStats();
+    return mediaFiles;
+  }
 
-    // Save updated hashes before returning
-    await this.saveHashes();
+  /**
+   * Main analysis function
+   */
+  async analyze(threads: Thread[]): Promise<MediaAnalyzerResult[]> {
+    console.log('Starting media analysis...');
+    await this.initDirectories();
 
-    return [{
-      timestamp: Date.now(),
-      threadId: threads[0]?.no || -1,
-      postId: threads[0]?.posts?.[0]?.no || -1,
-      categoryStats,
-      recentFiles: downloadedFiles.slice(-MediaAnalyzer.MAX_RECENT_FILES),
-      metadata: {
-        totalFilesProcessed: totalFiles,
-        filesDownloaded: downloadedFiles.length,
-        duplicatesSkipped,
-        filesDeleted: 0,
-        lastPurge: Date.now()
+    const results: MediaAnalyzerResult[] = [];
+    let totalFiles = 0;
+    let downloadedFiles = 0;
+    let duplicatesSkipped = 0;
+
+    try {
+      // Process each thread
+      for (const thread of threads) {
+        const mediaFiles = await this.processThreadMedia(thread);
+        downloadedFiles += mediaFiles.length;
+        
+        // Track recent files
+        const recentFiles = mediaFiles
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, MediaAnalyzer.MAX_RECENT_FILES);
+
+        // Get category statistics
+        const categoryStats = await this.getCategoryStats();
+
+        // Create result object
+        const result: MediaAnalyzerResult = {
+          threadId: thread.no,
+          postId: thread.no, // Use thread number as post ID for thread-level results
+          timestamp: Date.now(),
+          categoryStats,
+          recentFiles,
+          metadata: {
+            totalFilesProcessed: totalFiles,
+            filesDownloaded: downloadedFiles,
+            duplicatesSkipped,
+            filesDeleted: 0,
+            lastPurge: Date.now()
+          }
+        };
+
+        results.push(result);
       }
-    }];
+
+      // Clean up old files
+      const deletedCount = await this.purgeOldFiles();
+      console.log(`Deleted ${deletedCount} old files`);
+
+      // Save hash data
+      await this.saveHashes();
+
+      return results;
+    } catch (error) {
+      console.error('Error in media analysis:', error);
+      throw error;
+    }
   }
 } 

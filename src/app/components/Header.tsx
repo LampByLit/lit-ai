@@ -8,7 +8,7 @@ export const Header = () => {
       <Link href="https://lampbylit.com" target="_blank" rel="noopener noreferrer">
         <Image
           src="/logo.png"
-          alt="&amp Logo"
+          alt="Logo"
           width={120}
           height={40}
           priority

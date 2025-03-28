@@ -2,21 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './Card6.module.css';
+import pageStyles from '../page.module.css';
+import StagePost from './StagePost';
+import { Card } from './Card';
 
-interface TermStats {
-  term: string;
-  count: number;
-  previousCount: number;
-  percentChange: number;
-  lastSeen: number;
+interface MedsPost {
+  postId: number;
+  threadId: number;
+  comment: string;
+  timestamp: number;
+  name: string;
 }
 
 interface SlurAnalyzerResult {
-  termStats: TermStats[];
+  medsPosts: MedsPost[];
   metadata: {
     totalPostsAnalyzed: number;
-    postsWithTerms: number;
-    totalTermsFound: number;
+    postsWithMeds: number;
     lastAnalysis: number;
   };
 }
@@ -35,7 +37,7 @@ export default function Card6() {
         if (!latestResult) throw new Error('No data available');
         setData(latestResult);
       } catch (error) {
-        console.error('Error fetching slur data:', error);
+        console.error('Error fetching meds data:', error);
         setError('Error loading data');
       }
     };
@@ -48,44 +50,14 @@ export default function Card6() {
   if (error) return <div className={styles.error}>{error}</div>;
   if (!data) return <div className={styles.loading}>Loading...</div>;
 
-  const termStats = Array.isArray(data.termStats) ? data.termStats : [];
-  const topTerms = termStats
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 12);
-
-  const maxCount = topTerms.length > 0 ? Math.max(...topTerms.map(term => term.count)) : 0;
-
-  // Color calculation helper
-  const getBackgroundColor = (count: number) => {
-    const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
-    
-    // Map percentage to hue:
-    // 100% (highest count) = 0 (red)
-    // 0% (lowest count) = 270 (violet)
-    const hue = Math.round(270 - (percentage * 2.7));
-    const saturation = 85;
-    const lightness = 70;
-    
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  };
-
   return (
-    <div className={styles.container}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Slur Tally</h2>
-      <div className={styles.badges}>
-        {topTerms.map((term) => (
-          <div
-            key={term.term}
-            className={styles.badge}
-            style={{
-              backgroundColor: getBackgroundColor(term.count)
-            }}
-          >
-            <span className={styles.term}>{term.term}</span>
-            <span className={styles.count}>{term.count}</span>
-          </div>
-        ))}
+    <>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+        <StagePost position="top" cardType="meds" />
+        <StagePost position="middle" cardType="meds" />
+        <StagePost position="bottom" cardType="meds" />
       </div>
-    </div>
+    </>
   );
 } 
