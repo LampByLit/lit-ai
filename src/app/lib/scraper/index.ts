@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import { Readable } from 'stream';
-import { ensureDirectories, paths } from '../utils/paths';
+import { ensureDirectories, paths } from '@/app/utils/paths';
 import { Thread, Post, isAxiosError } from '../../types/interfaces';
 import { initializeAnalyzers, analyzeThreads, purgeOldResults } from '../analyzers';
 
