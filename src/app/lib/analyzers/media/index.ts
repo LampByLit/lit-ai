@@ -297,9 +297,9 @@ export class MediaAnalyzer extends BaseAnalyzer<MediaAnalyzerResult> {
     await this.initDirectories();
 
     const results: MediaAnalyzerResult[] = [];
-    let totalFiles = 0;
+    const totalFiles = 0;
     let downloadedFiles = 0;
-    let duplicatesSkipped = 0;
+    const duplicatesSkipped = 0;
 
     try {
       // Process each thread

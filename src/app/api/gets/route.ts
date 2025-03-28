@@ -3,17 +3,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { paths } from '@/app/utils/paths';
 
-interface Get {
-  postNumber: string;
-  comment: string;
-  checkCount: number;
-  getType: string;
-  hasImage?: boolean;
-  filename?: string;
-  ext?: string;
-  tim?: number;
-}
-
 interface GetResult {
   metadata: {
     postNo: number;

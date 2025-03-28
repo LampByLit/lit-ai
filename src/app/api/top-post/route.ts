@@ -3,17 +3,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { paths } from '@/app/utils/paths';
 
-interface Post {
-  no: number;
-  com?: string;
-  time: number;
-  replies?: number;
-  getType?: string;
-  tim?: number;
-  filename?: string;
-  ext?: string;
-}
-
 export async function GET() {
   try {
     // Read the results file

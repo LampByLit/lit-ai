@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './Card6.module.css';
-import pageStyles from '../page.module.css';
 import StagePost from './StagePost';
-import { Card } from './Card';
 
 interface MedsPost {
   postId: number;
