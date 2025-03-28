@@ -47,6 +47,24 @@ export default function Card6() {
 
   if (error) return <div className={styles.error}>{error}</div>;
   if (!data) return <div className={styles.loading}>Loading...</div>;
+  
+  if (!data.medsPosts || data.medsPosts.length === 0) {
+    return (
+      <>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          padding: '2rem',
+          textAlign: 'center',
+          color: '#666'
+        }}>
+          No meds posts found in recent threads
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

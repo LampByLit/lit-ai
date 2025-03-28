@@ -6,19 +6,19 @@ import { loadAllThreads } from '../utils/fileLoader';
 import { selectThreads } from '../utils/threadSelector';
 
 async function runScraperJob() {
-  await scrape();
+    await scrape();
 }
 
 async function runSummarizerJob() {
   const summarizer = new Summarizer(process.env.DEEPSEEK_API_KEY!);
   const allThreads = await loadAllThreads(path.resolve(process.cwd(), 'data', 'threads'));
-  const selection = selectThreads(allThreads);
-  const threadsToAnalyze = [
-    ...selection.topByPosts,
-    ...selection.mediumHighPosts,
-    ...selection.mediumPosts,
-    ...selection.lowPosts
-  ];
+    const selection = selectThreads(allThreads);
+    const threadsToAnalyze = [
+      ...selection.topByPosts,
+      ...selection.mediumHighPosts,
+      ...selection.mediumPosts,
+      ...selection.lowPosts
+    ];
   await summarizer.summarize(threadsToAnalyze);
 }
 
