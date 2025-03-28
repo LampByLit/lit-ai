@@ -1,0 +1,57 @@
+/**
+ * Environment variable validation and type-safe access
+ */
+
+export const env = {
+  RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT as string | undefined,
+  DATA_DIR: process.env.DATA_DIR as string | undefined,
+  DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY as string | undefined,
+  X_API_KEY: process.env.X_API_KEY as string | undefined,
+  X_API_KEY_SECRET: process.env.X_API_KEY_SECRET as string | undefined,
+  X_ACCESS_TOKEN: process.env.X_ACCESS_TOKEN as string | undefined,
+  X_ACCESS_TOKEN_SECRET: process.env.X_ACCESS_TOKEN_SECRET as string | undefined,
+  SKIP_DATA_CLEANUP: process.env.SKIP_DATA_CLEANUP as string | undefined,
+} as const;
+
+export type Env = typeof env;
+
+/**
+ * Validates required environment variables are present
+ * @throws Error if any required variables are missing
+ */
+export function validateEnv(): void {
+  const required = ['DEEPSEEK_API_KEY'];
+  const missing = required.filter(key => !env[key as keyof typeof env]);
+  
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+}
+
+/**
+ * Type-safe environment variable getter with optional default value
+ */
+export function getEnvVar<K extends keyof Env>(
+  key: K,
+  defaultValue?: string
+): string {
+  const value = env[key];
+  if (value === undefined && defaultValue === undefined) {
+    throw new Error(`Environment variable ${key} is not set and no default provided`);
+  }
+  return value ?? defaultValue ?? '';
+}
+
+/**
+ * Check if running in Railway production environment
+ */
+export function isRailway(): boolean {
+  return env.RAILWAY_ENVIRONMENT === 'production';
+}
+
+/**
+ * Get the data directory path, with proper fallback logic
+ */
+export function getDataDir(): string {
+  return env.DATA_DIR || (isRailway() ? '/data' : process.cwd() + '/data');
+} 

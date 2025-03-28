@@ -6,22 +6,19 @@
  */
 
 import path from 'path';
-import fs from 'fs';
+import { ensureDir } from './fs';
+import { isRailway, getDataDir } from './env';
 
 // Debug logging function
 function logPathInfo(label: string, value: string) {
   console.log(`[PATHS] ${label}: ${value}`);
 }
 
-// Detect if we're running on Railway
-const isRailway = process.env.RAILWAY_ENVIRONMENT === 'production';
-
-// Get the data directory from environment variable or default
-const DATA_DIR = process.env.DATA_DIR || 
-  (isRailway ? '/data' : path.resolve(process.cwd(), 'data'));
+// Get the data directory from environment
+const DATA_DIR = getDataDir();
 
 // Log environment information
-logPathInfo('Environment', isRailway ? 'Railway' : 'Local');
+logPathInfo('Environment', isRailway() ? 'Railway' : 'Local');
 logPathInfo('Project Root', process.cwd());
 logPathInfo('Process CWD', process.cwd());
 logPathInfo('__dirname', __dirname);
@@ -79,16 +76,17 @@ export type Paths = {
 };
 
 // Ensure paths matches the type definition
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _typeCheck: Paths = paths;
 
 /**
  * Ensures all required directories exist
  * This should be called during application startup
  */
-export function ensureDirectories(): void {
+export async function ensureDirectories(): Promise<void> {
   try {
     // Create base directories
-    [
+    const directories = [
       paths.dataDir,
       paths.threadsDir,
       paths.summariesDir,
@@ -100,41 +98,12 @@ export function ensureDirectories(): void {
       path.resolve(paths.analysisDir, 'geo'),
       path.resolve(paths.analysisDir, 'slur'),
       path.resolve(paths.analysisDir, 'media'),
-    ].forEach(dir => {
-      if (!fs.existsSync(dir)) {
-        console.log(`Creating directory: ${dir}`);
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      
-      // Set permissions in Railway environment
-      if (process.env.RAILWAY_ENVIRONMENT === 'production') {
-        try {
-          // Set directory permissions to 777
-          fs.chmodSync(dir, '777');
-          console.log(`Set directory permissions for ${dir} to 777`);
-          
-          // Set permissions for any existing files in the directory
-          if (fs.existsSync(dir)) {
-            const files = fs.readdirSync(dir);
-            files.forEach(file => {
-              const filePath = path.join(dir, file);
-              if (fs.statSync(filePath).isFile()) {
-                fs.chmodSync(filePath, '666');
-                console.log(`Set file permissions for ${filePath} to 666`);
-              }
-            });
-          }
-        } catch (permError) {
-          console.error(`Error setting permissions for ${dir}:`, permError);
-        }
-      }
-      
-      console.log(`Verified directory exists: ${dir}`);
-      
-      // Log directory permissions
-      const stats = fs.statSync(dir);
-      console.log(`Directory permissions for ${dir}: ${stats.mode.toString(8)}`);
-    });
+    ];
+
+    // Create all directories in parallel
+    await Promise.all(directories.map(dir => ensureDir(dir)));
+    
+    console.log('All required directories have been created and verified');
   } catch (error) {
     console.error('Error ensuring directories exist:', error);
     // Don't throw - let the application continue and handle errors at higher levels
@@ -145,23 +114,18 @@ export function ensureDirectories(): void {
  * Validates write permissions for all data directories
  * Returns true if all directories are writable
  */
-export function validateDirectories(): boolean {
+export async function validateDirectories(): Promise<boolean> {
   try {
     // Check if directories exist and are writable
-    [paths.dataDir, paths.threadsDir, paths.summariesDir, paths.analysisDir].forEach(dir => {
-      // Ensure directory exists
-      if (!fs.existsSync(dir)) {
-        throw new Error(`Directory does not exist: ${dir}`);
-      }
-      
-      // Test write permission by creating and removing a temp file
-      const testFile = path.join(dir, '.write-test');
-      fs.writeFileSync(testFile, 'test');
-      fs.unlinkSync(testFile);
-      
-      // Log success
-      console.log(`Validated write permissions for: ${dir}`);
-    });
+    const directories = [
+      paths.dataDir,
+      paths.threadsDir, 
+      paths.summariesDir,
+      paths.analysisDir
+    ];
+
+    // Validate all directories in parallel
+    await Promise.all(directories.map(dir => ensureDir(dir)));
     
     return true;
   } catch (error) {
