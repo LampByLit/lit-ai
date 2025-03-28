@@ -17,10 +17,9 @@ export async function ensureDir(dir: string): Promise<void> {
       console.log(`Created directory: ${dir}`);
     }
 
-    if (isRailway()) {
-      await fs.chmod(dir, 0o777);
-      console.log(`Set directory permissions for ${dir} to 777`);
-    }
+    // Always set directory permissions to be fully accessible
+    await fs.chmod(dir, 0o777);
+    console.log(`Set directory permissions for ${dir} to 777`);
   } catch (error) {
     console.error(`Failed to ensure directory ${dir}:`, error);
     throw error;
@@ -47,18 +46,17 @@ export async function safeWriteFile(
     // Write to temporary file first
     await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
 
-    // Set permissions if requested and in Railway
-    if (setPermissions && isRailway()) {
-      await fs.chmod(tempPath, 0o666);
-    }
+    // Always set file permissions to be readable
+    await fs.chmod(tempPath, 0o666);
+    console.log(`Set file permissions for ${tempPath} to 666`);
 
     // Rename temporary file to target file (atomic operation)
     await fs.rename(tempPath, filePath);
 
-    // Set permissions on final file if requested and in Railway
-    if (setPermissions && isRailway()) {
-      await fs.chmod(filePath, 0o666);
-    }
+    // Set permissions on final file
+    await fs.chmod(filePath, 0o666);
+    console.log(`Set file permissions for ${filePath} to 666`);
+
   } catch (error) {
     // Clean up temporary file if it exists
     try {

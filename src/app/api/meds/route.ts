@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import { paths } from '@/app/lib/utils/paths';
+import path from 'path';
+import { paths } from '@/app/utils/paths';
 
 interface MedsPost {
   postId: number;
@@ -11,32 +12,28 @@ interface MedsPost {
 }
 
 export async function GET() {
+  console.log('=== Meds API Debug Info ===');
+  console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
+  console.log('CWD:', process.cwd());
+  console.log('Data Dir:', paths.dataDir);
+
   try {
-    const resultsPath = paths.analyzerResultsFile('slur');
-    console.log('=== Meds API Debug Info ===');
-    console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
-    console.log('CWD:', process.cwd());
-    console.log('Data Dir:', paths.dataDir);
-    console.log('Looking for meds data at:', resultsPath);
-    
-    // Check directory structure
+    const resultsPath = path.resolve(paths.dataDir, 'analysis', 'slur', 'results.json');
+    console.log('Meds analysis path:', resultsPath);
+
+    // Log directory structure
     console.log('Directory exists check:');
     console.log('- Data dir exists:', fs.existsSync(paths.dataDir));
-    console.log('- Analysis dir exists:', fs.existsSync(paths.analysisDir));
-    console.log('- Slur dir exists:', fs.existsSync(paths.analysisDir + '/slur'));
-    
-    if (!fs.existsSync(resultsPath)) {
-      console.error(`Results file not found at: ${resultsPath}`);
-      return NextResponse.json([], { status: 200 });
-    }
+    console.log('- Analysis dir exists:', fs.existsSync(path.dirname(resultsPath)));
+    console.log('- Analysis file exists:', fs.existsSync(resultsPath));
 
-    // Set proper permissions in Railway
-    if (process.env.RAILWAY_ENVIRONMENT === 'production') {
-      try {
-        fs.chmodSync(resultsPath, '666');
-      } catch (error) {
-        console.error('Failed to set file permissions:', error);
-      }
+    // Return 404 if file doesn't exist
+    if (!fs.existsSync(resultsPath)) {
+      console.log('Meds analysis file does not exist');
+      return NextResponse.json(
+        { error: 'No meds data available' },
+        { status: 404 }
+      );
     }
 
     try {
@@ -47,7 +44,10 @@ export async function GET() {
       
       if (!latestResult || !Array.isArray(latestResult.medsPosts)) {
         console.log('No valid meds posts found in data');
-        return NextResponse.json([], { status: 200 });
+        return NextResponse.json(
+          { error: 'No valid meds data available' },
+          { status: 404 }
+        );
       }
 
       // Convert meds posts to the format expected by StagePost
@@ -63,11 +63,17 @@ export async function GET() {
       console.log(`Returning ${formattedPosts.length} formatted meds posts`);
       return NextResponse.json(formattedPosts);
     } catch (error) {
-      console.error(`Error reading meds results:`, error);
-      return NextResponse.json([], { status: 200 });
+      console.error('Error reading meds results:', error);
+      return NextResponse.json(
+        { error: 'Failed to read meds data' },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error('Error in meds API:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 } 

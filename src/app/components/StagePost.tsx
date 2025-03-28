@@ -95,26 +95,31 @@ function formatCheckCount(count: number): string {
 export default function StagePost({ position, cardType = 'gets' }: StagePostProps) {
   const [data, setData] = useState<Get | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
+
         if (cardType === 'meds') {
           const response = await fetch('/api/meds');
+          const json = await response.json();
+
           if (!response.ok) {
-            throw new Error('Failed to fetch meds data');
+            throw new Error(json.error || 'Failed to fetch meds data');
           }
-          const results = await response.json();
           
-          if (!Array.isArray(results) || results.length === 0) {
+          if (!Array.isArray(json)) {
             throw new Error('Invalid meds data structure');
           }
 
           // Select post based on position
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
-          const selectedPost = results[postIndex];
+          const selectedPost = json[postIndex];
 
           if (!selectedPost || !selectedPost.no) {
             throw new Error(`No post data for position ${position}`);
@@ -134,25 +139,25 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
               resto: selectedPost.resto,
               threadId: selectedPost.threadId
             });
-            setError(null);
           }
           return;
         }
 
         if (cardType === 'insights') {
           const response = await fetch('/api/reply');
+          const json = await response.json();
+
           if (!response.ok) {
-            throw new Error('Failed to fetch reply data');
+            throw new Error(json.error || 'Failed to fetch reply data');
           }
-          const results = await response.json();
           
-          if (!Array.isArray(results) || results.length === 0) {
+          if (!Array.isArray(json)) {
             throw new Error('Invalid reply data structure');
           }
 
           // Select post based on position
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
-          const selectedPost = results[postIndex];
+          const selectedPost = json[postIndex];
 
           if (!selectedPost || !selectedPost.no) {
             throw new Error(`No post data for position ${position}`);
@@ -172,25 +177,34 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
               resto: selectedPost.resto,
               threadId: selectedPost.threadId
             });
-            setError(null);
           }
           return;
         }
 
         // For GETs card, fetch GET data
         const response = await fetch('/api/significant-gets');
+        const json = await response.json();
+
         if (!response.ok) {
-          throw new Error('Failed to fetch GET data');
+          throw new Error(json.error || 'Failed to fetch GET data');
         }
-        const result = await response.json();
+
+        const result = position === 'top' ? json.getOne : json.getTwo;
+        if (!result) {
+          throw new Error(`No ${position} GET data available`);
+        }
+
         if (isMounted) {
-          setData(position === 'top' ? result.getOne : result.getTwo);
-          setError(null);
+          setData(result);
         }
       } catch (err) {
         if (isMounted) {
-          setError('Error fetching data');
+          setError(err instanceof Error ? err.message : 'Error fetching data');
           console.error('Error:', err);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
         }
       }
     };
@@ -204,12 +218,43 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     };
   }, [position, cardType]);
 
+  if (loading) {
+    return (
+      <div className={styles.stagePost}>
+        <div className={styles.header}>
+          <span className={styles.name}>Loading...</span>
+        </div>
+        <div className={styles.comment}>
+          <span className={styles.placeholderComment}>Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
-    return <div className={styles.stagePost}>Error loading data</div>;
+    return (
+      <div className={styles.stagePost}>
+        <div className={styles.header}>
+          <span className={styles.name}>Error</span>
+        </div>
+        <div className={styles.comment}>
+          <span className={styles.placeholderComment}>{error}</span>
+        </div>
+      </div>
+    );
   }
 
   if (!data) {
-    return <div className={styles.stagePost}>Loading...</div>;
+    return (
+      <div className={styles.stagePost}>
+        <div className={styles.header}>
+          <span className={styles.name}>No Data</span>
+        </div>
+        <div className={styles.comment}>
+          <span className={styles.placeholderComment}>No data available</span>
+        </div>
+      </div>
+    );
   }
 
   const parsedComment = data.comment ? parseComment(data.comment) : '';

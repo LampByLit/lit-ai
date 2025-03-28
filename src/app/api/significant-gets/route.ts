@@ -11,35 +11,27 @@ interface Get {
 }
 
 interface GetAnalyzerResult {
-  timestamp: number;
-  threadId: number;
-  postId: number;
-  getType: string;
-  repeatingDigits: string;
-  digitCount: number;
   metadata: {
     postNo: number;
-    checkCount: number;
     comment: string;
+    checkCount: number;
+    hasImage?: boolean;
+    filename?: string;
+    ext?: string;
+    tim?: number;
   };
+  getType: string;
+  digitCount: number;
 }
 
-function isValidGetResult(value: unknown): value is GetAnalyzerResult {
+function isValidGetResult(result: any): result is GetAnalyzerResult {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'timestamp' in value &&
-    'threadId' in value &&
-    'postId' in value &&
-    'getType' in value &&
-    'repeatingDigits' in value &&
-    'digitCount' in value &&
-    'metadata' in value &&
-    typeof (value as GetAnalyzerResult).metadata === 'object' &&
-    (value as GetAnalyzerResult).metadata !== null &&
-    'postNo' in (value as GetAnalyzerResult).metadata &&
-    'checkCount' in (value as GetAnalyzerResult).metadata &&
-    'comment' in (value as GetAnalyzerResult).metadata
+    result &&
+    result.metadata &&
+    typeof result.metadata.postNo === 'number' &&
+    typeof result.metadata.comment === 'string' &&
+    typeof result.metadata.checkCount === 'number' &&
+    typeof result.getType === 'string'
   );
 }
 
@@ -52,7 +44,7 @@ export async function GET() {
   try {
     // Ensure all directories exist first
     console.log('Ensuring directories exist...');
-    ensureDirectories();
+    await ensureDirectories();
     console.log('Directories ensured');
     
     const analysisPath = path.resolve(paths.dataDir, 'analysis', 'get', 'results.json');
@@ -64,77 +56,87 @@ export async function GET() {
     console.log('- Analysis dir exists:', fs.existsSync(path.dirname(analysisPath)));
     console.log('- Analysis file exists:', fs.existsSync(analysisPath));
 
-    // Initialize with empty results
-    let results: GetAnalyzerResult[] = [];
+    // Return 404 if file doesn't exist
+    if (!fs.existsSync(analysisPath)) {
+      console.log('Analysis file does not exist');
+      return NextResponse.json(
+        { error: 'No GETs data available' },
+        { status: 404 }
+      );
+    }
 
-    // Try to read and parse data if file exists
-    if (fs.existsSync(analysisPath)) {
-      try {
-        const content = fs.readFileSync(analysisPath, 'utf-8');
-        const data = JSON.parse(content);
-        
-        if (data.results && Array.isArray(data.results)) {
-          results = data.results.filter(isValidGetResult);
-          console.log(`Successfully loaded ${results.length} valid GET results`);
-        }
-      } catch (err) {
-        console.error('Error reading analysis file:', err);
+    // Try to read and parse data
+    try {
+      const content = fs.readFileSync(analysisPath, 'utf-8');
+      const data = JSON.parse(content);
+      
+      if (!data.results || !Array.isArray(data.results)) {
+        console.error('Invalid data structure in results.json');
+        return NextResponse.json(
+          { error: 'Invalid data structure' },
+          { status: 500 }
+        );
       }
-    }
 
-    // If no results, return empty data
-    if (results.length === 0) {
-      console.log('No valid results found, returning null values');
+      const validResults = data.results.filter(isValidGetResult);
+      console.log(`Found ${validResults.length} valid GET results`);
+
+      // Return 404 if no valid results
+      if (validResults.length === 0) {
+        console.log('No valid results found');
+        return NextResponse.json(
+          { error: 'No valid GETs data available' },
+          { status: 404 }
+        );
+      }
+
+      // Sort by check count and significance
+      const sortedResults = validResults
+        .sort((a: GetAnalyzerResult, b: GetAnalyzerResult) => {
+          // First prioritize check count
+          const checkDiff = b.metadata.checkCount - a.metadata.checkCount;
+          if (checkDiff !== 0) return checkDiff;
+          // Then prioritize digit count
+          return b.digitCount - a.digitCount;
+        });
+
+      // Take top 2 gets
+      const [getOne, getTwo] = sortedResults;
+
       return NextResponse.json({
-        getOne: null,
-        getTwo: null
+        getOne: getOne ? {
+          postNumber: getOne.metadata.postNo.toString(),
+          comment: getOne.metadata.comment,
+          checkCount: getOne.metadata.checkCount,
+          getType: getOne.getType,
+          hasImage: getOne.metadata.hasImage,
+          filename: getOne.metadata.filename,
+          ext: getOne.metadata.ext,
+          tim: getOne.metadata.tim
+        } : null,
+        getTwo: getTwo ? {
+          postNumber: getTwo.metadata.postNo.toString(),
+          comment: getTwo.metadata.comment,
+          checkCount: getTwo.metadata.checkCount,
+          getType: getTwo.getType,
+          hasImage: getTwo.metadata.hasImage,
+          filename: getTwo.metadata.filename,
+          ext: getTwo.metadata.ext,
+          tim: getTwo.metadata.tim
+        } : null
       });
+
+    } catch (err) {
+      console.error('Error reading or parsing analysis file:', err);
+      return NextResponse.json(
+        { error: 'Failed to read GETs data' },
+        { status: 500 }
+      );
     }
-
-    // Sort results by check count and digit count
-    const sortedResults = results.sort((a, b) => {
-      // First prioritize check count
-      const checkDiff = b.metadata.checkCount - a.metadata.checkCount;
-      if (checkDiff !== 0) return checkDiff;
-      // Then prioritize digit count
-      return b.digitCount - a.digitCount;
-    });
-
-    // Convert top result to getOne
-    const getOne: Get = {
-      postNumber: sortedResults[0].metadata.postNo.toString(),
-      comment: sortedResults[0].metadata.comment,
-      checkCount: sortedResults[0].metadata.checkCount,
-      getType: sortedResults[0].getType
-    };
-
-    console.log('Found GETone:', getOne);
-
-    // Find getTwo from remaining results, ensuring it's different from getOne
-    const getTwo = sortedResults.slice(1).find(result => 
-      result.metadata.postNo.toString() !== getOne.postNumber
-    );
-
-    const getTwoResponse = getTwo ? {
-      postNumber: getTwo.metadata.postNo.toString(),
-      comment: getTwo.metadata.comment,
-      checkCount: getTwo.metadata.checkCount,
-      getType: getTwo.getType
-    } : null;
-
-    console.log('Found GETtwo:', getTwoResponse);
-
-    return NextResponse.json({
-      getOne,
-      getTwo: getTwoResponse
-    });
   } catch (error) {
-    console.error('Error fetching significant GETs:', error);
-    if (error instanceof Error) {
-      console.error('Stack trace:', error.stack);
-    }
+    console.error('Error in significant-gets API:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch significant GETs' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
