@@ -167,7 +167,7 @@ export const CardContent: React.FC<CardContentProps> = ({ card }) => {
           }}>
             2050 © &amp
           </h2>
-          <div style={{ display: 'none' }}>
+          <div>
             <ScraperButton />
             <div style={{ marginTop: '1rem' }}>
               <SummarizerButton />
