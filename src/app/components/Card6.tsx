@@ -28,9 +28,17 @@ export default function Card6() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Fetching meds data...');
         const response = await fetch('/api/meds');
-        if (!response.ok) throw new Error('Failed to fetch data');
+        
+        if (!response.ok) {
+          console.error('Failed to fetch meds data:', response.status, response.statusText);
+          throw new Error('Failed to fetch data');
+        }
+        
         const jsonData = await response.json();
+        console.log('Received meds data:', jsonData);
+        
         setData({
           medsPosts: jsonData,
           metadata: {
@@ -39,6 +47,7 @@ export default function Card6() {
             lastAnalysis: Date.now()
           }
         });
+        setError(null); // Clear any previous errors
       } catch (error) {
         console.error('Error fetching meds data:', error);
         setError('Error loading data');

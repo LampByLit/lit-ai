@@ -33,6 +33,7 @@ export interface Paths {
   logsDir: string;
   articlesDir: string;
   threadFile: (threadId: string) => string;
+  analyzerResultsFile: (analyzer: string) => string;
 }
 
 export const paths: Paths = {
@@ -45,6 +46,7 @@ export const paths: Paths = {
   logsDir: path.resolve(DATA_DIR, 'logs'),
   articlesDir: path.resolve(DATA_DIR, 'articles'),
   threadFile: (threadId: string) => path.resolve(paths.threadsDir, `${threadId}.json`),
+  analyzerResultsFile: (analyzer: string) => path.resolve(paths.analysisDir, analyzer, 'results.json'),
 };
 
 /**

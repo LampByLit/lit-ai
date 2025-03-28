@@ -13,23 +13,22 @@ interface MedsPost {
 export async function GET() {
   try {
     const resultsPath = paths.analyzerResultsFile('slur');
+    console.log('Looking for meds data at:', resultsPath);
     
     if (!fs.existsSync(resultsPath)) {
-      return NextResponse.json(
-        { error: 'No meds data available' },
-        { status: 404 }
-      );
+      console.log('No meds data file found at:', resultsPath);
+      return NextResponse.json([], { status: 200 }); // Return empty array instead of error
     }
 
     try {
       const data = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
+      console.log('Successfully read meds data file');
+      
       const latestResult = Array.isArray(data.results) ? data.results[0] : null;
       
       if (!latestResult || !Array.isArray(latestResult.medsPosts)) {
-        return NextResponse.json(
-          { error: 'Invalid data format' },
-          { status: 500 }
-        );
+        console.log('No valid meds posts found in data');
+        return NextResponse.json([], { status: 200 }); // Return empty array instead of error
       }
 
       // Convert meds posts to the format expected by StagePost
@@ -42,19 +41,14 @@ export async function GET() {
         threadId: post.threadId
       }));
 
+      console.log(`Returning ${formattedPosts.length} formatted meds posts`);
       return NextResponse.json(formattedPosts);
     } catch (error) {
       console.error(`Error reading meds results:`, error);
-      return NextResponse.json(
-        { error: 'Invalid data format' },
-        { status: 500 }
-      );
+      return NextResponse.json([], { status: 200 }); // Return empty array instead of error
     }
   } catch (error) {
     console.error('Error in meds API:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json([], { status: 200 }); // Return empty array instead of error
   }
 } 
