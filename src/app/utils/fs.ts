@@ -5,7 +5,6 @@
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
-import { isRailway } from './env';
 
 /**
  * Ensures a directory exists, creating it if necessary
@@ -32,9 +31,9 @@ export async function ensureDir(dir: string): Promise<void> {
 export async function safeWriteFile(
   filePath: string,
   data: unknown,
-  options: { ensureDirectory?: boolean; setPermissions?: boolean } = {}
+  options: { ensureDirectory?: boolean } = {}
 ): Promise<void> {
-  const { ensureDirectory = true, setPermissions = true } = options;
+  const { ensureDirectory = true } = options;
   const tempPath = `${filePath}.tmp`;
 
   try {

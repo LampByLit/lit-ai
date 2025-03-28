@@ -3,13 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { paths, ensureDirectories } from '@/app/utils/paths';
 
-interface Get {
-  postNumber: string;
-  comment: string;
-  checkCount: number;
-  getType: string;
-}
-
 interface GetAnalyzerResult {
   metadata: {
     postNo: number;
@@ -24,14 +17,24 @@ interface GetAnalyzerResult {
   digitCount: number;
 }
 
-function isValidGetResult(result: any): result is GetAnalyzerResult {
+function isValidGetResult(result: unknown): result is GetAnalyzerResult {
+  if (!result || typeof result !== 'object') {
+    return false;
+  }
+
+  const candidate = result as Record<string, unknown>;
+  
+  if (!candidate.metadata || typeof candidate.metadata !== 'object') {
+    return false;
+  }
+
+  const metadata = candidate.metadata as Record<string, unknown>;
+
   return (
-    result &&
-    result.metadata &&
-    typeof result.metadata.postNo === 'number' &&
-    typeof result.metadata.comment === 'string' &&
-    typeof result.metadata.checkCount === 'number' &&
-    typeof result.getType === 'string'
+    typeof metadata.postNo === 'number' &&
+    typeof metadata.comment === 'string' &&
+    typeof metadata.checkCount === 'number' &&
+    typeof candidate.getType === 'string'
   );
 }
 
