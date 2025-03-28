@@ -12,7 +12,7 @@ interface Sparkle {
   duration: string;
 }
 
-export function SparklingLogo() {
+export default function SparklingLogo() {
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
 
   useEffect(() => {
@@ -43,13 +43,21 @@ export function SparklingLogo() {
           />
         ))}
       </div>
-      <Image 
-        src="/logo.png" 
-        alt="Sparkling Logo" 
-        width={100} 
-        height={100}
-        priority
-      />
+      <div className={styles.imageWrapper}>
+        <Image 
+          src="/loading.png" 
+          alt="Sparkling Logo" 
+          width={200}
+          height={50}
+          className={styles.logo}
+          style={{
+            objectFit: 'contain',
+            width: '100%',
+            height: 'auto'
+          }}
+          priority
+        />
+      </div>
     </div>
   );
 } 

@@ -9,6 +9,13 @@ import fs from 'fs/promises';
 // Load environment variables
 loadEnvConfig(process.cwd());
 
+interface AnalysisStats {
+  totalThreads: number;
+  totalAnalyzedPosts: number;
+  averageDelusionalPercentage: number;
+  generatedAt: number;
+}
+
 export async function POST() {
   try {
     console.log('Starting summarizer process...');
@@ -81,10 +88,17 @@ export async function POST() {
     );
     console.log('Results saved to:', outputPath);
 
+    // Update stats using the batchStats from articles
+    const stats: AnalysisStats = {
+      totalThreads: articles.batchStats.totalThreads,
+      totalAnalyzedPosts: articles.batchStats.totalAnalyzedPosts,
+      averageDelusionalPercentage: articles.batchStats.averageDelusionalPercentage,
+      generatedAt: articles.batchStats.generatedAt
+    };
+
     return NextResponse.json({ 
       message: 'Summarizer completed successfully',
       threadsAnalyzed: articles.batchStats.totalThreads,
-      averageAntisemiticPercentage: articles.batchStats.averageAntisemiticPercentage,
       matrixStats: {
         meanPercentage: matrix.statistics.mean,
         medianPercentage: matrix.statistics.median,

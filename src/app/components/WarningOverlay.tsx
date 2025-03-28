@@ -52,7 +52,7 @@ const WarningOverlay: React.FC = () => {
           fontWeight: 'bold',
           letterSpacing: '0.05em'
         }}>
-          WARNING:
+          LOADING
         </h1>
         <p style={{
           fontSize: '2rem',
@@ -60,7 +60,7 @@ const WarningOverlay: React.FC = () => {
           letterSpacing: '0.02em',
           lineHeight: '1.4'
         }}>
-          DO NOT ENTER. THIS PAGE IS NOT SAFE FOR WORK.
+          PLEASE STAND BY
         </p>
       </div>
     </div>
