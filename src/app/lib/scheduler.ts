@@ -23,11 +23,19 @@ async function runSummarizerJob() {
 }
 
 export class Scheduler {
+  private static instance: Scheduler | null = null;
   private scrapeJob: cron.ScheduledTask | null = null;
   private summarizeJob: cron.ScheduledTask | null = null;
 
-  constructor() {
+  private constructor() {
     this.initializeJobs();
+  }
+
+  public static getInstance(): Scheduler {
+    if (!Scheduler.instance) {
+      Scheduler.instance = new Scheduler();
+    }
+    return Scheduler.instance;
   }
 
   private initializeJobs() {
@@ -43,13 +51,13 @@ export class Scheduler {
     });
   }
 
-  startJobs() {
+  start() {
     this.scrapeJob?.start();
     this.summarizeJob?.start();
     console.log('Started all scheduled jobs');
   }
 
-  stopJobs() {
+  stop() {
     this.scrapeJob?.stop();
     this.summarizeJob?.stop();
     console.log('Stopped all scheduled jobs');
@@ -66,4 +74,5 @@ export class Scheduler {
   }
 }
 
-export const scheduler = new Scheduler(); 
+// Remove the exported instance since we're using getInstance() now
+// export const scheduler = new Scheduler(); 
