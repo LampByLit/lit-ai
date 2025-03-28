@@ -2,24 +2,15 @@
 
 import { useEffect, useState, useRef } from 'react';
 import styles from './ArticleCard.module.css';
-
-interface Article {
-  threadId: number;
-  headline: string;
-  article: string;
-  antisemiticStats: {
-    percentage: number;
-  };
-  metadata: {
-    totalPosts: number;
-  };
-}
+import { Card } from './Card';
+import { ArticleAnalysis } from '../types/article';
 
 interface ArticleResponse {
-  articles: Article[];
+  articles: ArticleAnalysis[];
 }
 
 interface ArticleCardProps {
+  article?: ArticleAnalysis;
   index?: number;
 }
 
@@ -112,11 +103,13 @@ function FitText({ text, threadId }: { text: string; threadId: number }) {
   );
 }
 
-export default function ArticleCard({ index = 0 }: ArticleCardProps) {
-  const [article, setArticle] = useState<Article | null>(null);
+export function ArticleCard({ article: propArticle, index = 0 }: ArticleCardProps) {
+  const [article, setArticle] = useState<ArticleAnalysis | null>(propArticle || null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (propArticle) return; // Don't fetch if article is provided as prop
+
     const fetchArticle = async () => {
       try {
         const response = await fetch('/api/articles');
@@ -138,28 +131,32 @@ export default function ArticleCard({ index = 0 }: ArticleCardProps) {
     };
 
     fetchArticle();
-  }, [index]);
+  }, [index, propArticle]);
 
   if (error) return <div className={styles.error}>{error}</div>;
   if (!article) return <div className={styles.loading}>Loading...</div>;
 
+  const { headline, article: content, delusionalStats } = article;
+  const { analyzedComments, delusionalComments, percentage } = delusionalStats;
+
   return (
-    <div className={styles.container}>
-      <FitText text={article.headline} threadId={article.threadId} />
-      <p className={styles.article}>{formatArticleText(article.article)}</p>
+    <Card className={styles.articleCard}>
+      <h2 className={styles.headline}>{headline}</h2>
+      <div className={styles.content}>{content}</div>
       <div className={styles.stats}>
-        <a
-          href={`https://archive.4plebs.org/pol/thread/${article.threadId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.statsLink}
-        >
-          Replies: {article.metadata.totalPosts}
-        </a>
-        {article.antisemiticStats.percentage > 10 && (
-          <span>Antisemitism: {article.antisemiticStats.percentage.toFixed(1)}%</span>
-        )}
+        <div className={styles.stat}>
+          <span className={styles.label}>Analyzed:</span>
+          <span className={styles.value}>{analyzedComments}</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.label}>Delusional:</span>
+          <span className={styles.value}>{delusionalComments}</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.label}>Percentage:</span>
+          <span className={styles.value}>{percentage.toFixed(1)}%</span>
+        </div>
       </div>
-    </div>
+    </Card>
   );
 } 

@@ -1,21 +1,28 @@
+export interface ArticleStats {
+  analyzedComments: number;
+  delusionalComments: number;
+  percentage: number;
+}
+
 export interface ArticleAnalysis {
-  threadId: number;
+  threadId: string;
   headline: string;
   article: string;
-  antisemiticStats: {
-    analyzedComments: number;
-    antisemiticComments: number;
-    percentage: number;
-  };
-  metadata: {
-    totalPosts: number;
-    analyzedPosts: number;
-    generatedAt: number;
-  };
+  delusionalStats: ArticleStats;
+  generatedAt: number;
 }
 
 export interface ArticleGeneratorConfig {
-  analysisPercentage: number;  // Percentage of comments to analyze (e.g., 30)
+  maxTokens: number;
+  temperature: number;
+  topP: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
+}
+
+export interface ArticleGeneratorOptions {
+  config?: Partial<ArticleGeneratorConfig>;
+  forceRegenerate?: boolean;
 }
 
 export interface ArticleBatch {
@@ -23,7 +30,7 @@ export interface ArticleBatch {
   batchStats: {
     totalThreads: number;
     totalAnalyzedPosts: number;
-    averageAntisemiticPercentage: number;
+    averageDelusionalPercentage: number;
     generatedAt: number;
   };
 } 

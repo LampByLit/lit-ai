@@ -59,7 +59,7 @@ Do not start with "Overview of Current Online Discourse" or any similar header.`
         {
           role: 'system',
           content: `You are an academic researcher analyzing content patterns.
-Your task is to identify exactly 5 dominant themes (excluding antisemitism).
+Your task is to identify exactly 5 dominant themes.
 For each theme:
 1. Provide a clear, specific name
 2. List 3-5 relevant keywords
@@ -77,7 +77,7 @@ Format your response as JSON matching this structure:
         },
         {
           role: 'user',
-          content: `Analyze these articles and identify exactly 5 dominant themes (excluding antisemitism):\n\n${articlesContent}`
+          content: `Analyze these articles and identify exactly 5 dominant themes:\n\n${articlesContent}`
         }
       ],
       temperature: 0.3
@@ -103,7 +103,7 @@ Format your response as JSON matching this structure:
         {
           role: 'system',
           content: `You are an academic researcher analyzing sentiment patterns.
-Your task is to identify exactly 5 significant sentiments (excluding antisemitism).
+Your task is to identify exactly 5 significant sentiments.
 For each sentiment:
 1. Provide a clear, specific name
 2. List 3-5 relevant keywords
@@ -121,7 +121,7 @@ Format your response as JSON matching this structure:
         },
         {
           role: 'user',
-          content: `Analyze these articles and identify exactly 5 significant sentiments (excluding antisemitism):\n\n${articlesContent}`
+          content: `Analyze these articles and identify exactly 5 significant sentiments:\n\n${articlesContent}`
         }
       ],
       temperature: 0.3

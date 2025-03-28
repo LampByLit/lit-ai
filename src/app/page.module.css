@@ -413,3 +413,13 @@ a.secondary {
   padding: 0 !important;
   overflow: hidden !important;
 }
+
+.transparentCard {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+}
+
+.transparentCard h2 {
+  display: none !important;
+}

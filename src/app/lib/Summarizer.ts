@@ -1,36 +1,57 @@
 import { Thread } from '../types/interfaces';
 import { ArticleGenerator } from './ArticleGenerator';
-import { ArticleBatch } from '../types/article';
-import { AntisemitismMatrix } from '../types/antisemitism';
-import { AntisemitismMatrixAnalyzer } from './analyzers/AntisemitismMatrix';
+import { ArticleBatch, ArticleAnalysis } from '../types/article';
+import { DelusionalMatrix } from '../types/delusional';
+import { DelusionalMatrixAnalyzer } from './analyzers/DelusionalMatrix';
 import { BigPictureGenerator } from './analyzers/BigPictureGenerator';
 import { BigPictureAnalysis } from '../types/bigpicture';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import { paths } from '@/app/utils/paths';
+import { DeepSeekClient } from './deepseek';
 
 interface Summary {
   articles: ArticleBatch;
-  matrix: AntisemitismMatrix;
+  matrix: DelusionalMatrix;
   bigPicture: BigPictureAnalysis;
   timestamp?: number;
 }
 
 export class Summarizer {
   private articleGenerator: ArticleGenerator;
-  private matrixAnalyzer: AntisemitismMatrixAnalyzer;
+  private matrixAnalyzer: DelusionalMatrixAnalyzer;
   private bigPictureGenerator: BigPictureGenerator;
   private outputFile: string;
+  private client: DeepSeekClient;
+  private outputPath: string;
+  private articles: ArticleAnalysis[];
+  private matrix: DelusionalMatrix;
+  private batchStats: ArticleBatch['batchStats'];
 
   constructor(apiKey: string) {
     if (!apiKey) {
       throw new Error('DeepSeek API key is required');
     }
     this.articleGenerator = new ArticleGenerator(apiKey);
-    this.matrixAnalyzer = new AntisemitismMatrixAnalyzer(apiKey);
+    this.matrixAnalyzer = new DelusionalMatrixAnalyzer(apiKey);
     this.bigPictureGenerator = new BigPictureGenerator(apiKey);
     this.outputFile = path.resolve(paths.dataDir, 'analysis', 'latest-summary.json');
+    this.client = new DeepSeekClient(apiKey);
+    this.outputPath = path.resolve(paths.dataDir, 'analysis');
+    this.articles = [];
+    this.matrix = {
+      statistics: { mean: 0, median: 0, totalAnalyzed: 0, totalDelusional: 0 },
+      themes: [],
+      trends: [],
+      generatedAt: 0
+    };
+    this.batchStats = {
+      totalThreads: 0,
+      totalAnalyzedPosts: 0,
+      averageDelusionalPercentage: 0,
+      generatedAt: 0
+    };
   }
 
   private async saveSummary(summary: Summary): Promise<void> {
@@ -52,33 +73,72 @@ export class Summarizer {
     }
   }
 
-  async analyze(threads: Thread[]): Promise<Summary> {
-    console.log(`Starting analysis of ${threads.length} threads...`);
+  async summarize(threads: Thread[]): Promise<Summary> {
+    console.log('\nGenerating summaries...');
     
-    // Generate articles first
-    const articles = await this.articleGenerator.generateArticles(threads, (threadId) => {
-      console.log(`Progress: ${threadId} completed`);
-    });
-    
-    // Run matrix and big picture analysis in parallel
-    const [matrix, bigPicture] = await Promise.all([
-      this.matrixAnalyzer.analyze(articles.articles),
-      this.bigPictureGenerator.analyze(threads, articles.articles)
-    ]);
-    
-    // Combine all results and save
-    const summary: Summary = { articles, matrix, bigPicture };
+    // Generate articles for each thread
+    const articles: ArticleBatch = {
+      articles: [],
+      batchStats: {
+        totalThreads: 0,
+        totalAnalyzedPosts: 0,
+        averageDelusionalPercentage: 0,
+        generatedAt: Date.now()
+      }
+    };
+
+    for (const thread of threads) {
+      try {
+        if (thread.posts) {
+          const article = await this.articleGenerator.generate(
+            thread.no.toString(),
+            thread.posts.map(p => p.com || '').filter(Boolean)
+          );
+          articles.articles.push(article);
+        }
+      } catch (error) {
+        console.error(`Failed to generate article for thread ${thread.no}:`, error);
+      }
+    }
+
+    // Calculate batch statistics
+    articles.batchStats.totalThreads = articles.articles.length;
+    articles.batchStats.totalAnalyzedPosts = articles.articles.reduce(
+      (sum, a) => sum + a.delusionalStats.analyzedComments, 
+      0
+    );
+    articles.batchStats.averageDelusionalPercentage = articles.articles.reduce(
+      (sum, a) => sum + a.delusionalStats.percentage, 
+      0
+    ) / articles.articles.length;
+    articles.batchStats.generatedAt = Date.now();
+
+    // Generate matrix analysis
+    const matrix = await this.matrixAnalyzer.analyze(articles.articles);
+
+    // Generate big picture analysis
+    const bigPicture = await this.bigPictureGenerator.analyze(threads, articles.articles);
+
+    // Save the complete summary
+    const summary = {
+      articles,
+      matrix,
+      bigPicture,
+      timestamp: Date.now()
+    };
+
     await this.saveSummary(summary);
-    
+
+    // Log analysis results
     console.log('\nAnalysis complete:');
     console.log(`- Analyzed ${articles.batchStats.totalAnalyzedPosts} posts across ${articles.batchStats.totalThreads} threads`);
-    console.log(`- Average antisemitic content: ${articles.batchStats.averageAntisemiticPercentage.toFixed(2)}%`);
-    console.log(`- Identified ${matrix.themes.length} antisemitic themes`);
-    console.log(`- Mean antisemitic percentage: ${matrix.statistics.mean.toFixed(2)}%`);
-    console.log(`- Median antisemitic percentage: ${matrix.statistics.median.toFixed(2)}%`);
+    console.log(`- Average delusional content: ${articles.batchStats.averageDelusionalPercentage.toFixed(2)}%`);
+    console.log(`- Identified ${matrix.themes.length} delusional themes`);
+    console.log(`- Mean delusional percentage: ${matrix.statistics.mean.toFixed(2)}%`);
+    console.log(`- Median delusional percentage: ${matrix.statistics.median.toFixed(2)}%`);
     console.log(`- Generated big picture overview with ${bigPicture.themes.length} general themes`);
     console.log(`- Identified ${bigPicture.sentiments.length} major sentiments`);
-    
+
     return summary;
   }
 } 

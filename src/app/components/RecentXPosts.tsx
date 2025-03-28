@@ -9,43 +9,6 @@ const RecentXPosts = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Hide the info icon when component mounts and add dark mode styles
-    const style = document.createElement('style');
-    style.textContent = `
-      .react-tweet-theme a[href*="help.x.com"] {
-        display: none !important;
-      }
-      
-      /* Dark mode styles for Tweet */
-      .react-tweet {
-        background: #1a1a1a !important;
-        border: 1px solid #333 !important;
-        color: #fff !important;
-      }
-      
-      .react-tweet-theme {
-        background: #1a1a1a !important;
-      }
-
-      .react-tweet * {
-        color: #fff !important;
-      }
-
-      .react-tweet a {
-        color: #1DA1F2 !important;
-      }
-
-      .react-tweet-theme button {
-        background: #333 !important;
-        border: 1px solid #444 !important;
-      }
-
-      .react-tweet time {
-        color: #888 !important;
-      }
-    `;
-    document.head.appendChild(style);
-    
     const fetchTweetId = async () => {
       try {
         const response = await fetch('/api/recent-tweets');
@@ -68,10 +31,7 @@ const RecentXPosts = () => {
     fetchTweetId();
     // Refresh every 5 minutes
     const interval = setInterval(fetchTweetId, 5 * 60 * 1000);
-    return () => {
-      clearInterval(interval);
-      document.head.removeChild(style);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -161,10 +121,12 @@ const RecentXPosts = () => {
             border: '1px solid #333',
             padding: '0.75rem'
           }}>
-            <Tweet 
-              id={tweetId} 
-              onError={() => console.log(`Failed to load tweet ${tweetId}`)}
-            />
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Tweet 
+                id={tweetId} 
+                onError={() => console.log(`Failed to load tweet ${tweetId}`)}
+              />
+            </div>
             <div style={{ 
               marginTop: '0.5rem',
               fontSize: '0.875rem',

@@ -1,6 +1,6 @@
 import { DeepSeekClient } from '../deepseek';
 import { ArticleAnalysis } from '../../types/article';
-import { AntisemitismMatrix, AntisemitismTheme, AntisemitismTrend } from '../../types/antisemitism';
+import { DelusionalMatrix, DelusionalTheme, DelusionalTrend } from '../../types/delusional';
 import { paths } from '@/app/utils/paths';
 import path from 'path';
 import fs from 'fs/promises';
@@ -19,7 +19,7 @@ interface ThemeData {
   }[];
 }
 
-export class AntisemitismMatrixAnalyzer {
+export class DelusionalMatrixAnalyzer {
   private client: DeepSeekClient;
   private outputPath: string;
   private categoriesPath: string;
@@ -29,11 +29,11 @@ export class AntisemitismMatrixAnalyzer {
 
   constructor(apiKey: string) {
     this.client = new DeepSeekClient(apiKey);
-    this.outputPath = path.resolve(paths.dataDir, 'analysis', 'antisemitism.json');
+    this.outputPath = path.resolve(paths.dataDir, 'analysis', 'delusional.json');
     this.categoriesPath = path.resolve(paths.dataDir, 'analysis', 'categories.json');
     this.examplesPath = path.resolve(paths.dataDir, 'analysis', 'examples.json');
-    this.historicalDataPath = path.resolve(paths.dataDir, 'analysis', 'antisemitism-trends.json');
-    this.latestAnalysisPath = path.resolve(paths.dataDir, 'analysis', 'latest-antisemitism.json');
+    this.historicalDataPath = path.resolve(paths.dataDir, 'analysis', 'delusional-trends.json');
+    this.latestAnalysisPath = path.resolve(paths.dataDir, 'analysis', 'latest-delusional.json');
   }
 
   private async rotateLogs() {
@@ -80,7 +80,7 @@ export class AntisemitismMatrixAnalyzer {
     );
   }
 
-  private shouldUpdateTrend(trends: AntisemitismTrend[]): boolean {
+  private shouldUpdateTrend(trends: DelusionalTrend[]): boolean {
     if (trends.length === 0) return true;
     
     const lastUpdate = trends[trends.length - 1].timestamp;
@@ -88,9 +88,9 @@ export class AntisemitismMatrixAnalyzer {
   }
 
   private calculateStatistics(articles: ArticleAnalysis[]) {
-    const percentages = articles.map(a => a.antisemiticStats.percentage);
-    const totalAnalyzed = articles.reduce((sum, a) => sum + a.antisemiticStats.analyzedComments, 0);
-    const totalAntisemitic = articles.reduce((sum, a) => sum + a.antisemiticStats.antisemiticComments, 0);
+    const percentages = articles.map(a => a.delusionalStats.percentage);
+    const totalAnalyzed = articles.reduce((sum, a) => sum + a.delusionalStats.analyzedComments, 0);
+    const totalDelusional = articles.reduce((sum, a) => sum + a.delusionalStats.delusionalComments, 0);
 
     // Calculate mean
     const mean = percentages.reduce((sum, p) => sum + p, 0) / percentages.length;
@@ -106,11 +106,11 @@ export class AntisemitismMatrixAnalyzer {
       mean,
       median,
       totalAnalyzed,
-      totalAntisemitic
+      totalDelusional
     };
   }
 
-  private async generateThemes(articles: ArticleAnalysis[]): Promise<AntisemitismTheme[]> {
+  private async generateThemes(articles: ArticleAnalysis[]): Promise<DelusionalTheme[]> {
     try {
       console.log("Generating themes from articles...");
       console.log(`Analyzing ${articles.length} articles for themes...`);
@@ -122,7 +122,7 @@ export class AntisemitismMatrixAnalyzer {
         messages: [
           {
             role: 'system',
-            content: `You are an academic researcher analyzing antisemitic content patterns.
+            content: `You are an academic researcher analyzing paranoid and delusional content patterns.
 Your task is to identify exactly 5 dominant themes in the provided content.
 For each theme:
 1. Provide a clear, specific name
@@ -143,7 +143,7 @@ Format your response as JSON matching this structure:
           },
           {
             role: 'user',
-            content: `Analyze these summaries and identify exactly 5 dominant antisemitic themes:\n\n${prompt}`
+            content: `Analyze these summaries and identify exactly 5 dominant paranoid/delusional themes:\n\n${prompt}`
           }
         ],
         temperature: 0.3
@@ -188,11 +188,11 @@ Format your response as JSON matching this structure:
       return `Thread ${article.threadId}:
 Headline: ${article.headline}
 Article: ${article.article}
-Antisemitic content: ${article.antisemiticStats.antisemiticComments} out of ${article.antisemiticStats.analyzedComments} posts (${article.antisemiticStats.percentage.toFixed(2)}%)`;
+Delusional content: ${article.delusionalStats.delusionalComments} out of ${article.delusionalStats.analyzedComments} posts (${article.delusionalStats.percentage.toFixed(2)}%)`;
     }).join('\n\n');
   }
 
-  private async loadHistoricalTrends(): Promise<AntisemitismTrend[]> {
+  private async loadHistoricalTrends(): Promise<DelusionalTrend[]> {
     try {
       const content = await fs.readFile(this.historicalDataPath, 'utf-8');
       return JSON.parse(content);
@@ -201,7 +201,7 @@ Antisemitic content: ${article.antisemiticStats.antisemiticComments} out of ${ar
     }
   }
 
-  private async saveHistoricalTrends(trends: AntisemitismTrend[]) {
+  private async saveHistoricalTrends(trends: DelusionalTrend[]) {
     try {
       await fs.mkdir(path.dirname(this.historicalDataPath), { recursive: true });
       
@@ -218,12 +218,12 @@ Antisemitic content: ${article.antisemiticStats.antisemiticComments} out of ${ar
     }
   }
 
-  private cleanTrends(trends: AntisemitismTrend[]): AntisemitismTrend[] {
+  private cleanTrends(trends: DelusionalTrend[]): DelusionalTrend[] {
     const now = Date.now();
     const twoDaysAgo = now - (HOURS_TO_KEEP * 60 * 60 * 1000);
     
     // Group trends by hour
-    const trendsByHour = new Map<number, AntisemitismTrend[]>();
+    const trendsByHour = new Map<number, DelusionalTrend[]>();
     
     trends
       .filter(t => t.timestamp > twoDaysAgo) // Keep last 48 hours
@@ -236,7 +236,7 @@ Antisemitic content: ${article.antisemiticStats.antisemiticComments} out of ${ar
       });
     
     // For each hour, keep only MAX_TRENDS_PER_HOUR most recent entries
-    const cleanedTrends: AntisemitismTrend[] = [];
+    const cleanedTrends: DelusionalTrend[] = [];
     for (const hourTrends of trendsByHour.values()) {
       cleanedTrends.push(
         ...hourTrends
@@ -251,7 +251,7 @@ Antisemitic content: ${article.antisemiticStats.antisemiticComments} out of ${ar
       .slice(-MAX_STORED_TRENDS);
   }
 
-  private async updateTrends(articles: ArticleAnalysis[]): Promise<AntisemitismTrend[]> {
+  private async updateTrends(articles: ArticleAnalysis[]): Promise<DelusionalTrend[]> {
     const historicalTrends = await this.loadHistoricalTrends();
     
     // Check if we should add a new trend point
@@ -259,9 +259,9 @@ Antisemitic content: ${article.antisemiticStats.antisemiticComments} out of ${ar
       return historicalTrends;
     }
 
-    const currentTrend: AntisemitismTrend = {
+    const currentTrend: DelusionalTrend = {
       timestamp: Date.now(),
-      percentage: articles.reduce((sum, a) => sum + a.antisemiticStats.percentage, 0) / articles.length,
+      percentage: articles.reduce((sum, a) => sum + a.delusionalStats.percentage, 0) / articles.length,
       threadCount: articles.length
     };
 
@@ -271,8 +271,8 @@ Antisemitic content: ${article.antisemiticStats.antisemiticComments} out of ${ar
     return updatedTrends;
   }
 
-  async analyze(articles: ArticleAnalysis[]): Promise<AntisemitismMatrix> {
-    console.log('\nGenerating antisemitism matrix...');
+  async analyze(articles: ArticleAnalysis[]): Promise<DelusionalMatrix> {
+    console.log('\nGenerating delusional content matrix...');
     
     try {
       // Run all analysis steps in parallel
