@@ -1,7 +1,6 @@
 import { Thread, Post } from '../../../types/interfaces';
 import { BaseAnalyzer } from '../base';
 import { SlurAnalyzerResult, MedsPost } from './types';
-import { SlurAnalysis } from '@/app/types/slur';
 
 /**
  * Analyzer for tracking occurrences of "meds" in posts
