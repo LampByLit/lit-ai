@@ -31,6 +31,7 @@ export interface Paths {
   mediaDir: string;
   mediaOpDir: string;
   logsDir: string;
+  threadFile: (threadId: string) => string;
 }
 
 export const paths: Paths = {
@@ -41,6 +42,7 @@ export const paths: Paths = {
   mediaDir: path.resolve(DATA_DIR, 'media'),
   mediaOpDir: path.resolve(DATA_DIR, 'media-op'),
   logsDir: path.resolve(DATA_DIR, 'logs'),
+  threadFile: (threadId: string) => path.resolve(paths.threadsDir, `${threadId}.json`),
 };
 
 /**
