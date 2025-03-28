@@ -47,12 +47,15 @@ export class ArticleGenerator {
           role: 'system',
           content: `You are an expert journalist summarizing online discussions.
 Your task is to analyze a thread of posts and generate:
-1. A clear, concise headline (1 line)
-2. A detailed article summarizing the key points and themes (2-3 paragraphs)
+1. A clear, concise headline of 4 to 6 words.
+2. A detailed article summarizing the key points and themes (175 - 200 words).
 
 Focus on identifying paranoid and delusional thought patterns, conspiracy theories, and extreme beliefs.
 Maintain a neutral, academic tone.
-Do not include personal opinions or commentary.
+Always directly quote comments verbatim in quotation marks.
+Be sure to include lots of quotes.
+Never contextualize the content with words like "online" or "forum". Never mention the discussion itself, only what was discussed.
+Be sure that your headline and article are within the word limits.
 Format your response as:
 HEADLINE: [your headline]
 ARTICLE: [your article]`
@@ -96,7 +99,7 @@ Common indicators include:
 - Extreme paranoia
 - Disorganized thinking
 
-For each post, determine if it shows clear signs of delusional content.
+For each post, determine if it shows clear signs of delusional content. Be very liberal with your interpretation.
 Maintain strict clinical objectivity.
 Respond with ONLY a number indicating how many posts contain clear delusional content.`
         },

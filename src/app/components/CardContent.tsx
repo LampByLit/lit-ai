@@ -126,14 +126,14 @@ export const CardContent: React.FC<CardContentProps> = ({ card }) => {
         );
       }
       if (card.id === 'content-12') {
-        return <ArticleCard />;
+        return <ArticleCard index={0} />;
       }
       if (card.id.startsWith('content-') && parseInt(card.id.split('-')[1]) >= 13 && parseInt(card.id.split('-')[1]) <= 23) {
-        const articleIndex = parseInt(card.id.split('-')[1]) - 12;
+        const articleIndex = parseInt(card.id.split('-')[1]) - 13;
         return <ArticleCard index={articleIndex} />;
       }
       if (card.id === 'content-24') {
-        return <ArticleCard index={10} />;
+        return <ArticleCard index={11} />;
       }
       if (card.id === 'bottom-left-card') {
         return (

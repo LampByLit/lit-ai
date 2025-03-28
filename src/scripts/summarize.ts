@@ -111,7 +111,7 @@ async function main() {
     console.log('🏃 Starting analysis...\n');
     console.log('This may take a while. Processing threads:');
     
-    const results = await summarizer.analyze(threadsToAnalyze);
+    const results = await summarizer.summarize(threadsToAnalyze);
     console.log(`\n✓ Completed analysis of all ${threadsToAnalyze.length} threads`);
 
     // Log detailed results
@@ -119,10 +119,10 @@ async function main() {
     console.log('Article Analysis:');
     console.log(`- Analyzed ${results.articles.batchStats.totalAnalyzedPosts} posts`);
     console.log(`- Across ${results.articles.batchStats.totalThreads} threads`);
-    console.log(`- Average antisemitic content: ${results.articles.batchStats.averageAntisemiticPercentage.toFixed(2)}%`);
+    console.log(`- Average delusional content: ${results.articles.batchStats.averageDelusionalPercentage.toFixed(2)}%`);
     
-    console.log('\nAntisemitism Matrix:');
-    console.log(`- Identified ${results.matrix.themes.length} antisemitic themes`);
+    console.log('\nDelusional Matrix:');
+    console.log(`- Identified ${results.matrix.themes.length} delusional themes`);
     console.log(`- Mean percentage: ${results.matrix.statistics.mean.toFixed(2)}%`);
     console.log(`- Median percentage: ${results.matrix.statistics.median.toFixed(2)}%`);
     

@@ -93,7 +93,7 @@ function FitText({ text, threadId }: { text: string; threadId: number }) {
       <a 
         ref={textRef} 
         className={styles.headline}
-        href={`https://archive.4plebs.org/pol/thread/${threadId}`}
+        href={`https://archive.4plebs.org/x/thread/${threadId}`}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -140,22 +140,21 @@ export function ArticleCard({ article: propArticle, index = 0 }: ArticleCardProp
   const { analyzedComments, delusionalComments, percentage } = delusionalStats;
 
   return (
-    <Card className={styles.articleCard}>
-      <h2 className={styles.headline}>{headline}</h2>
+    <Card 
+      className={`${styles.container} articleCard`}
+      data-article-index={index % 5}
+    >
+      <FitText text={headline} threadId={parseInt(article.threadId)} />
       <div className={styles.content}>{content}</div>
       <div className={styles.stats}>
-        <div className={styles.stat}>
-          <span className={styles.label}>Analyzed:</span>
-          <span className={styles.value}>{analyzedComments}</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.label}>Delusional:</span>
-          <span className={styles.value}>{delusionalComments}</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.label}>Percentage:</span>
-          <span className={styles.value}>{percentage.toFixed(1)}%</span>
-        </div>
+        <a 
+          href={`https://archive.4plebs.org/x/thread/${article.threadId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.statsLink}
+        >
+          {analyzedComments} Replies
+        </a>
       </div>
     </Card>
   );

@@ -17,7 +17,7 @@ const ChanCatalogView = () => {
       padding: 0
     }}>
       <iframe
-        src="https://boards.4chan.org/pol/catalog"
+        src="https://boards.4chan.org/x/catalog"
         style={{
           width: '100%',
           height: '100%',
@@ -26,7 +26,7 @@ const ChanCatalogView = () => {
           padding: 0,
           display: 'block'
         }}
-        title="4chan /pol/ catalog"
+        title="4chan /x/ catalog"
       />
     </div>
   );

@@ -133,33 +133,33 @@ export const FlippableCard: React.FC<FlippableCardProps> = ({
                   padding: '0.25rem'
                 }}>
                   <p style={{ 
-                    fontSize: 'clamp(0.35rem, 1.25vw, 0.75rem)', 
+                    fontSize: 'clamp(0.5rem, 1.35vw, 0.85rem)', 
                     opacity: 0.8,
                     marginBottom: '0.35rem',
                     lineHeight: '1.1'
                   }}>
                     This dashboard collects data from 4chan and uses artificial intelligence to analyze, process, summarize, and post results on X.com for research purposes. 
-                    The statistics in this console represent roughly 15% of /pol/&apos;s daily activity, with an emphasis on curating data from the catalog&apos;s most active threads. 
+                    The statistics in this console represent roughly 50% of /x/&apos;s daily activity, with an emphasis on curating data from the catalog&apos;s most active threads. 
                     Certain elements of this page, including the Delusional Content per Post, Dominant Themes, and Article Summaries, are generated once daily at 00:00 UTC, all other elements update every two hours and retain data for up to two days.
                   </p>
                   <p style={{ 
-                    fontSize: 'clamp(0.35rem, 1.25vw, 0.75rem)', 
+                    fontSize: 'clamp(0.5rem, 1.35vw, 0.85rem)', 
                     opacity: 0.8,
                     marginBottom: '0.35rem',
                     lineHeight: '1.1'
                   }}>
-                    This project is open source and can be downloaded at <a href="https://github.com/hxkm/pol-ai" style={{color: 'blue'}}>github.com/hxkm/pol-ai</a>.
+                    This project is open source and can be downloaded at <a href="https://github.com/hxkm/xpara-ai" style={{color: '#ffcd42'}}>github.com/hxkm/xpara-ai</a>.
                   </p>
                   <p style={{ 
-                    fontSize: 'clamp(0.35rem, 1.25vw, 0.75rem)', 
+                    fontSize: 'clamp(0.5rem, 1.35vw, 0.85rem)', 
                     opacity: 0.8,
                     marginBottom: '0.35rem',
                     lineHeight: '1.1'
                   }}>
-                    To support and expand this project and others like it, <a href="https://www.patreon.com/Lamp" style={{color: 'red'}}>please subscribe on Patreon</a>.
+                    To support and expand this project and others like it, <a href="https://www.patreon.com/Lamp" style={{color: '#ffcd42'}}>please subscribe on Patreon</a>.
                   </p>
                   <p style={{ 
-                    fontSize: 'clamp(0.35rem, 1.25vw, 0.75rem)', 
+                    fontSize: 'clamp(0.5rem, 1.35vw, 0.85rem)', 
                     opacity: 0.8,
                     lineHeight: '1.1'
                   }}>

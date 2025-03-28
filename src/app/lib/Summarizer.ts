@@ -64,6 +64,20 @@ export class Summarizer {
       }, null, 2));
       await fs.rename(tempFile, this.outputFile);
       console.log(`Summary saved to: ${this.outputFile}`);
+
+      // Save delusional stats separately
+      const delusionalStatsPath = path.resolve(paths.dataDir, 'analysis', 'latest-delusional.json');
+      const delusionalStats = {
+        statistics: {
+          analyzedComments: summary.articles.batchStats.totalAnalyzedPosts,
+          delusionalComments: Math.round(summary.articles.batchStats.totalAnalyzedPosts * (summary.articles.batchStats.averageDelusionalPercentage / 100)),
+          percentage: summary.articles.batchStats.averageDelusionalPercentage
+        },
+        generatedAt: Date.now()
+      };
+      await fs.writeFile(delusionalStatsPath, JSON.stringify(delusionalStats, null, 2));
+      console.log(`Delusional stats saved to: ${delusionalStatsPath}`);
+
     } catch (error) {
       console.error('Failed to save summary:', error);
       if (existsSync(tempFile)) {
@@ -92,7 +106,8 @@ export class Summarizer {
         if (thread.posts) {
           const article = await this.articleGenerator.generate(
             thread.no.toString(),
-            thread.posts.map(p => p.com || '').filter(Boolean)
+            thread.posts.map(p => p.com || '').filter(Boolean),
+            { forceRegenerate: true }
           );
           articles.articles.push(article);
         }

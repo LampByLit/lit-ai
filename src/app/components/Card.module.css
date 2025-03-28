@@ -44,7 +44,6 @@
 }
 
 .card {
-  background: #333333;
   border-radius: 12px;
   padding: 24px;
   margin: 0;
@@ -58,6 +57,12 @@
   overflow: hidden;
   box-sizing: border-box;
   color: white;
+  background: #333333;
+}
+
+/* Remove background for article cards */
+:global(.articleCard).card {
+  background: transparent !important;
 }
 
 .card:hover {

@@ -6,9 +6,9 @@ interface CardProps {
   className?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '' }) => {
+export const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
   return (
-    <div className={`${styles.card} ${className}`}>
+    <div className={`${styles.card} ${className}`} {...props}>
       {children}
     </div>
   );

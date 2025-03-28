@@ -40,7 +40,7 @@ export const DelusionalStats = () => {
   if (loading) {
     return (
       <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Delusional Content Per Post</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
         <div className={styles.loading}>Loading stats...</div>
       </div>
     );
@@ -49,7 +49,7 @@ export const DelusionalStats = () => {
   if (error) {
     return (
       <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Delusional Content Per Post</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
         <div className={styles.error}>{error}</div>
       </div>
     );
@@ -58,22 +58,24 @@ export const DelusionalStats = () => {
   if (!stats) {
     return (
       <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Delusional Content Per Post</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
         <div className={styles.error}>No stats available</div>
       </div>
     );
   }
 
   const { level, percentage, trend } = stats;
-  const trendSymbol = trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '→';
+  const trendSymbol = trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '↑';
   const trendColor = trend.direction === 'up' ? '#ff4444' : trend.direction === 'down' ? '#44ff44' : '#ffffff';
 
   return (
     <div className={styles.statsContainer}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Delusional Content Per Post</h2>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
       <div className={styles.statsContent}>
         <div className={styles.mainStat}>
-          {percentage.toFixed(1)}% {level}
+          <div style={{ fontSize: '4rem', lineHeight: '1', fontWeight: 'bold' }}>
+            {percentage.toFixed(1)}% <span style={{ fontSize: '1rem' }}>{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+          </div>
         </div>
         <div className={styles.trendStat} style={{ color: trendColor }}>
           {trendSymbol} {trend.amount.toFixed(1)}%
