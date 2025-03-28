@@ -51,16 +51,26 @@ export class Scheduler {
     });
   }
 
-  start() {
-    this.scrapeJob?.start();
-    this.summarizeJob?.start();
-    console.log('Started all scheduled jobs');
+  async start(): Promise<void> {
+    try {
+      this.scrapeJob?.start();
+      this.summarizeJob?.start();
+      console.log('Started all scheduled jobs');
+    } catch (error) {
+      console.error('Failed to start jobs:', error);
+      throw error;
+    }
   }
 
-  stop() {
-    this.scrapeJob?.stop();
-    this.summarizeJob?.stop();
-    console.log('Stopped all scheduled jobs');
+  async stop(): Promise<void> {
+    try {
+      this.scrapeJob?.stop();
+      this.summarizeJob?.stop();
+      console.log('Stopped all scheduled jobs');
+    } catch (error) {
+      console.error('Failed to stop jobs:', error);
+      throw error;
+    }
   }
 
   async runScrapeManually() {
