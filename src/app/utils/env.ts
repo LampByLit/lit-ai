@@ -1,3 +1,5 @@
+import path from 'path';
+
 /**
  * Environment variable validation and type-safe access
  */
@@ -51,7 +53,18 @@ export function isRailway(): boolean {
 
 /**
  * Get the data directory path, with proper fallback logic
+ * Always returns /data in Railway, handles local development properly
  */
 export function getDataDir(): string {
-  return env.DATA_DIR || (isRailway() ? '/data' : process.cwd() + '/data');
+  if (isRailway()) {
+    return '/data';
+  }
+  
+  // For local development
+  if (env.DATA_DIR) {
+    return env.DATA_DIR;
+  }
+  
+  // Default to data directory in project root for local dev
+  return path.resolve(process.cwd(), 'data');
 } 

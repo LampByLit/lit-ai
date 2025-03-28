@@ -19,14 +19,12 @@ const DATA_DIR = getDataDir();
 
 // Log environment information
 logPathInfo('Environment', isRailway() ? 'Railway' : 'Local');
-logPathInfo('Project Root', process.cwd());
-logPathInfo('Process CWD', process.cwd());
-logPathInfo('__dirname', __dirname);
 logPathInfo('Data Directory', DATA_DIR);
+logPathInfo('Process CWD', process.cwd());
 
 // Define all application paths
 export const paths = {
-  // Base data directory
+  // Base data directory (always /data in Railway)
   dataDir: DATA_DIR,
   
   // Thread data storage
