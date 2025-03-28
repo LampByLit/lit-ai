@@ -300,7 +300,7 @@ export class Scheduler {
           console.log('Summary results:', {
             threadsAnalyzed: results.articles.batchStats.totalThreads,
             postsAnalyzed: results.articles.batchStats.totalAnalyzedPosts,
-            averageAntisemiticPercentage: results.articles.batchStats.averageAntisemiticPercentage
+            averageDelusionalPercentage: results.articles.batchStats.averageDelusionalPercentage
           });
         } catch (error) {
           lastError = error;
