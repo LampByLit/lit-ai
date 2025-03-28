@@ -31,6 +31,7 @@ export interface Paths {
   mediaDir: string;
   mediaOpDir: string;
   logsDir: string;
+  articlesDir: string;
   threadFile: (threadId: string) => string;
 }
 
@@ -42,6 +43,7 @@ export const paths: Paths = {
   mediaDir: path.resolve(DATA_DIR, 'media'),
   mediaOpDir: path.resolve(DATA_DIR, 'media-op'),
   logsDir: path.resolve(DATA_DIR, 'logs'),
+  articlesDir: path.resolve(DATA_DIR, 'articles'),
   threadFile: (threadId: string) => path.resolve(paths.threadsDir, `${threadId}.json`),
 };
 
@@ -60,6 +62,7 @@ export async function ensureDirectories(): Promise<void> {
       paths.mediaDir,
       paths.mediaOpDir,
       paths.logsDir,
+      paths.articlesDir,
       path.resolve(paths.analysisDir, 'get'),
       path.resolve(paths.analysisDir, 'reply'),
       path.resolve(paths.analysisDir, 'link'),
