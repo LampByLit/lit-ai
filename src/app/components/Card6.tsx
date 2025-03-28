@@ -28,12 +28,17 @@ export default function Card6() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/analysis/slur');
+        const response = await fetch('/api/meds');
         if (!response.ok) throw new Error('Failed to fetch data');
         const jsonData = await response.json();
-        const latestResult = Array.isArray(jsonData.results) ? jsonData.results[0] : null;
-        if (!latestResult) throw new Error('No data available');
-        setData(latestResult);
+        setData({
+          medsPosts: jsonData,
+          metadata: {
+            totalPostsAnalyzed: 0,
+            postsWithMeds: jsonData.length,
+            lastAnalysis: Date.now()
+          }
+        });
       } catch (error) {
         console.error('Error fetching meds data:', error);
         setError('Error loading data');
@@ -58,9 +63,15 @@ export default function Card6() {
           alignItems: 'center',
           padding: '2rem',
           textAlign: 'center',
-          color: '#666'
+          color: '#666',
+          background: '#1a1a1a',
+          borderRadius: '8px',
+          border: '1px dashed #444'
         }}>
-          No meds posts found in recent threads
+          <p style={{ marginBottom: '1rem' }}>No Prescriptions Found</p>
+          <p style={{ fontSize: '0.875rem', color: '#666' }}>
+            No medication-related posts in recent threads
+          </p>
         </div>
       </>
     );
