@@ -57,7 +57,29 @@ export const paths = {
   
   // Helper to get summary file path by ID
   summaryFile: (threadId: string) => path.resolve(DATA_DIR, 'summaries', `${threadId}.json`),
+  
+  // Helper to get analyzer results file path
+  analyzerResultsFile: (analyzer: string) => path.resolve(DATA_DIR, 'analysis', analyzer, 'results.json')
+} as const;
+
+// Add type definition for paths
+export type Paths = {
+  dataDir: string;
+  threadsDir: string;
+  summariesDir: string;
+  analysisDir: string;
+  bigPicturePath: string;
+  trendsPath: string;
+  mediaDir: string;
+  mediaOpDir: string;
+  xposterDir: string;
+  threadFile: (threadId: string) => string;
+  summaryFile: (threadId: string) => string;
+  analyzerResultsFile: (analyzer: string) => string;
 };
+
+// Ensure paths matches the type definition
+const _typeCheck: Paths = paths;
 
 /**
  * Ensures all required directories exist
