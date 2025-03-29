@@ -127,7 +127,8 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
           const selectedPost = json[postIndex];
 
-          if (!selectedPost) {
+          // Ensure we have a valid post with all required data
+          if (!selectedPost || !selectedPost.no || !selectedPost.com) {
             if (isMounted) {
               setData(null);
               setLoading(false);
@@ -135,19 +136,33 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
             }
           }
 
+          // Create a safe post object with all properties optional
+          const safePost = {
+            no: selectedPost?.no,
+            com: selectedPost?.com || '',
+            time: selectedPost?.time || Math.floor(Date.now() / 1000),
+            name: selectedPost?.name || 'Anonymous',
+            tim: selectedPost?.tim,
+            filename: selectedPost?.filename,
+            ext: selectedPost?.ext,
+            sub: selectedPost?.sub,
+            resto: selectedPost?.resto,
+            threadId: selectedPost?.threadId || selectedPost?.resto || selectedPost?.no
+          };
+
           if (isMounted) {
             setData({
-              postNumber: selectedPost?.no?.toString() || 'Unknown',
-              comment: selectedPost?.com || '',
+              postNumber: safePost.no.toString(),
+              comment: safePost.com,
               checkCount: 0,
               getType: 'Meds Post',
-              hasImage: selectedPost?.tim !== undefined || selectedPost?.filename !== undefined,
-              filename: selectedPost?.filename,
-              ext: selectedPost?.ext,
-              tim: selectedPost?.tim,
-              sub: selectedPost?.sub,
-              resto: selectedPost?.resto,
-              threadId: selectedPost?.threadId
+              hasImage: safePost.tim !== undefined || safePost.filename !== undefined,
+              filename: safePost.filename,
+              ext: safePost.ext,
+              tim: safePost.tim,
+              sub: safePost.sub,
+              resto: safePost.resto,
+              threadId: safePost.threadId
             });
           }
           return;
