@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import styles from './Card6.module.css';
 import StagePost from './StagePost';
 
 interface MedsPost {
@@ -20,6 +19,28 @@ interface SlurAnalyzerResult {
     lastAnalysis: number;
   };
 }
+
+const containerStyles = {
+  display: 'flex',
+  flexDirection: 'column' as const,
+  alignItems: 'center',
+  padding: '2rem',
+  textAlign: 'center' as const,
+  color: '#666',
+  background: '#1a1a1a',
+  borderRadius: '8px',
+  border: '1px dashed #444'
+};
+
+const titleStyles = {
+  fontSize: '1.25rem',
+  marginBottom: '1rem'
+};
+
+const subtitleStyles = {
+  fontSize: '0.875rem',
+  color: '#666'
+};
 
 export default function Card6() {
   const [data, setData] = useState<SlurAnalyzerResult | null>(null);
@@ -75,18 +96,8 @@ export default function Card6() {
   if (loading) {
     return (
       <>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center',
-          padding: '2rem',
-          textAlign: 'center',
-          color: '#666',
-          background: '#1a1a1a',
-          borderRadius: '8px',
-          border: '1px dashed #444'
-        }}>
+        <h2 style={titleStyles}>Meds Prescribed</h2>
+        <div style={containerStyles}>
           <p>Loading...</p>
         </div>
       </>
@@ -96,20 +107,10 @@ export default function Card6() {
   if (error || !data || !data.medsPosts || data.medsPosts.length === 0) {
     return (
       <>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center',
-          padding: '2rem',
-          textAlign: 'center',
-          color: '#666',
-          background: '#1a1a1a',
-          borderRadius: '8px',
-          border: '1px dashed #444'
-        }}>
+        <h2 style={titleStyles}>Meds Prescribed</h2>
+        <div style={containerStyles}>
           <p style={{ marginBottom: '1rem' }}>No Prescriptions Found</p>
-          <p style={{ fontSize: '0.875rem', color: '#666' }}>
+          <p style={subtitleStyles}>
             No medication-related posts in recent threads
           </p>
         </div>
@@ -119,7 +120,7 @@ export default function Card6() {
 
   return (
     <>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
+      <h2 style={titleStyles}>Meds Prescribed</h2>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
         <StagePost position="top" cardType="meds" />
         <StagePost position="middle" cardType="meds" />
