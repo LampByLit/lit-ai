@@ -1,5 +1,5 @@
 import { DeepSeekClient } from '../deepseek';
-import { ArticleAnalysis } from '../../types/article';
+import { ArticleAnalysis, ArticleBatch } from '../../types/article';
 import { DelusionalMatrix, DelusionalTheme, DelusionalTrend } from '../../types/delusional';
 import { paths } from '@/app/utils/paths';
 import path from 'path';
@@ -18,6 +18,16 @@ interface ThemeData {
     frequency: number;
     keywords: string[];
   }[];
+}
+
+interface AnalysisData {
+  articles: ArticleBatch;
+  matrix: DelusionalMatrix;
+  bigPicture: {
+    themes: unknown[];
+    sentiments: unknown[];
+    overview: { article: string };
+  };
 }
 
 export class DelusionalMatrixAnalyzer {
@@ -71,7 +81,7 @@ export class DelusionalMatrixAnalyzer {
     }
   }
 
-  private async saveAnalysis(data: unknown) {
+  private async saveAnalysis(data: AnalysisData) {
     await this.rotateLogs();
     await fs.mkdir(path.dirname(this.latestAnalysisPath), { recursive: true });
 
@@ -94,12 +104,11 @@ export class DelusionalMatrixAnalyzer {
     };
 
     // Calculate stats from articles
-    if (Array.isArray((data as any)?.articles?.articles)) {
-      const articles = (data as any).articles.articles;
+    if (data.articles?.articles?.length > 0) {
       let totalAnalyzed = 0;
       let totalDelusional = 0;
 
-      for (const article of articles) {
+      for (const article of data.articles.articles) {
         if (article?.delusionalStats) {
           totalAnalyzed += article.delusionalStats.analyzedComments || 0;
           totalDelusional += article.delusionalStats.delusionalComments || 0;
