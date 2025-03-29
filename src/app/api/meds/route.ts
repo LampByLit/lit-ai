@@ -27,27 +27,28 @@ export async function GET() {
     console.log('- Analysis dir exists:', fs.existsSync(path.dirname(resultsPath)));
     console.log('- Analysis file exists:', fs.existsSync(resultsPath));
 
-    // Return 404 if file doesn't exist
+    // Return empty array if file doesn't exist
     if (!fs.existsSync(resultsPath)) {
-      console.log('Meds analysis file does not exist');
-      return NextResponse.json(
-        { error: 'No meds data available' },
-        { status: 404 }
-      );
+      console.log('Meds analysis file does not exist, returning empty array');
+      return NextResponse.json([]);
     }
 
     try {
       const data = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
       console.log('Successfully read meds data file');
       
-      const latestResult = Array.isArray(data.results) ? data.results[0] : null;
+      // Ensure we have valid results array
+      if (!data || !data.results || !Array.isArray(data.results) || data.results.length === 0) {
+        console.log('No valid meds data found, returning empty array');
+        return NextResponse.json([]);
+      }
+
+      const latestResult = data.results[0];
       
+      // Ensure we have valid meds posts
       if (!latestResult || !Array.isArray(latestResult.medsPosts)) {
-        console.log('No valid meds posts found in data');
-        return NextResponse.json(
-          { error: 'No valid meds data available' },
-          { status: 404 }
-        );
+        console.log('No valid meds posts found, returning empty array');
+        return NextResponse.json([]);
       }
 
       // Convert meds posts to the format expected by StagePost
@@ -64,16 +65,10 @@ export async function GET() {
       return NextResponse.json(formattedPosts);
     } catch (error) {
       console.error('Error reading meds results:', error);
-      return NextResponse.json(
-        { error: 'Failed to read meds data' },
-        { status: 500 }
-      );
+      return NextResponse.json([]);
     }
   } catch (error) {
     console.error('Error in meds API:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json([]);
   }
 } 

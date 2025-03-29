@@ -24,11 +24,15 @@ interface SlurAnalyzerResult {
 export default function Card6() {
   const [data, setData] = useState<SlurAnalyzerResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log('Fetching meds data...');
+        setLoading(true);
+        setError(null);
+        
         const response = await fetch('/api/meds');
         
         if (!response.ok) {
@@ -39,6 +43,12 @@ export default function Card6() {
         const jsonData = await response.json();
         console.log('Received meds data:', jsonData);
         
+        // Handle empty array case
+        if (!Array.isArray(jsonData) || jsonData.length === 0) {
+          setData(null);
+          return;
+        }
+        
         setData({
           medsPosts: jsonData,
           metadata: {
@@ -47,10 +57,13 @@ export default function Card6() {
             lastAnalysis: Date.now()
           }
         });
-        setError(null); // Clear any previous errors
+        setError(null);
       } catch (error) {
         console.error('Error fetching meds data:', error);
         setError('Error loading data');
+        setData(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -59,10 +72,28 @@ export default function Card6() {
     return () => clearInterval(interval);
   }, []);
 
-  if (error) return <div className={styles.error}>{error}</div>;
-  if (!data) return <div className={styles.loading}>Loading...</div>;
-  
-  if (!data.medsPosts || data.medsPosts.length === 0) {
+  if (loading) {
+    return (
+      <>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          padding: '2rem',
+          textAlign: 'center',
+          color: '#666',
+          background: '#1a1a1a',
+          borderRadius: '8px',
+          border: '1px dashed #444'
+        }}>
+          <p>Loading...</p>
+        </div>
+      </>
+    );
+  }
+
+  if (error || !data || !data.medsPosts || data.medsPosts.length === 0) {
     return (
       <>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>

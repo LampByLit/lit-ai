@@ -117,12 +117,25 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
             throw new Error('Invalid meds data structure');
           }
 
+          // Handle empty array case
+          if (json.length === 0) {
+            if (isMounted) {
+              setData(null);
+              setError('No meds data available');
+            }
+            return;
+          }
+
           // Select post based on position
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
           const selectedPost = json[postIndex];
 
           if (!selectedPost || !selectedPost.no) {
-            throw new Error(`No post data for position ${position}`);
+            if (isMounted) {
+              setData(null);
+              setError(`No post data for position ${position}`);
+            }
+            return;
           }
 
           if (isMounted) {
@@ -235,10 +248,10 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     return (
       <div className={styles.stagePost}>
         <div className={styles.header}>
-          <span className={styles.name}>Error</span>
+          <span className={styles.name}>No Data</span>
         </div>
         <div className={styles.comment}>
-          <span className={styles.placeholderComment}>{error}</span>
+          <span className={styles.placeholderComment}>No data available</span>
         </div>
       </div>
     );
