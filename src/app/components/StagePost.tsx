@@ -114,44 +114,40 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           const json = await response.json();
           console.log('Received meds data:', json);
 
+          // Handle any possible data state gracefully
           if (!Array.isArray(json)) {
-            throw new Error('Invalid meds data structure');
-          }
-
-          // Handle empty array case
-          if (json.length === 0) {
             if (isMounted) {
               setData(null);
-              setError('No meds data available');
+              setLoading(false);
+              return;
             }
-            return;
           }
 
-          // Select post based on position
+          // Select post based on position, but handle empty array
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
           const selectedPost = json[postIndex];
 
-          if (!selectedPost || !selectedPost.no) {
+          if (!selectedPost) {
             if (isMounted) {
               setData(null);
-              setError(`No post data for position ${position}`);
+              setLoading(false);
+              return;
             }
-            return;
           }
 
           if (isMounted) {
             setData({
-              postNumber: selectedPost.no.toString(),
-              comment: selectedPost.com || '',
+              postNumber: selectedPost?.no?.toString() || 'Unknown',
+              comment: selectedPost?.com || '',
               checkCount: 0,
               getType: 'Meds Post',
-              hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
-              filename: selectedPost.filename,
-              ext: selectedPost.ext,
-              tim: selectedPost.tim,
-              sub: selectedPost.sub,
-              resto: selectedPost.resto,
-              threadId: selectedPost.threadId
+              hasImage: selectedPost?.tim !== undefined || selectedPost?.filename !== undefined,
+              filename: selectedPost?.filename,
+              ext: selectedPost?.ext,
+              tim: selectedPost?.tim,
+              sub: selectedPost?.sub,
+              resto: selectedPost?.resto,
+              threadId: selectedPost?.threadId
             });
           }
           return;
@@ -161,41 +157,44 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           const response = await fetch('/api/reply');
           const json = await response.json();
 
-          if (!response.ok) {
-            throw new Error(json.error || 'Failed to fetch reply data');
+          if (!response.ok || !Array.isArray(json)) {
+            if (isMounted) {
+              setData(null);
+              setLoading(false);
+              return;
+            }
           }
           
-          if (!Array.isArray(json)) {
-            throw new Error('Invalid reply data structure');
-          }
-
-          // Select post based on position
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
           const selectedPost = json[postIndex];
 
-          if (!selectedPost || !selectedPost.no) {
-            throw new Error(`No post data for position ${position}`);
+          if (!selectedPost) {
+            if (isMounted) {
+              setData(null);
+              setLoading(false);
+              return;
+            }
           }
 
           if (isMounted) {
             setData({
-              postNumber: selectedPost.no.toString(),
-              comment: selectedPost.com || '',
-              checkCount: selectedPost.replies || 0,
+              postNumber: selectedPost?.no?.toString() || 'Unknown',
+              comment: selectedPost?.com || '',
+              checkCount: selectedPost?.replies || 0,
               getType: 'Most Replied',
-              hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
-              filename: selectedPost.filename,
-              ext: selectedPost.ext,
-              tim: selectedPost.tim,
-              sub: selectedPost.sub,
-              resto: selectedPost.resto,
-              threadId: selectedPost.threadId
+              hasImage: selectedPost?.tim !== undefined || selectedPost?.filename !== undefined,
+              filename: selectedPost?.filename,
+              ext: selectedPost?.ext,
+              tim: selectedPost?.tim,
+              sub: selectedPost?.sub,
+              resto: selectedPost?.resto,
+              threadId: selectedPost?.threadId
             });
           }
           return;
         }
 
-        // For GETs card, fetch GET data
+        // For GETs card
         const response = await fetch('/api/significant-gets');
         const json = await response.json();
 
@@ -204,12 +203,9 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
         }
 
         const result = position === 'top' ? json.getOne : json.getTwo;
-        if (!result) {
-          throw new Error(`No ${position} GET data available`);
-        }
-
+        
         if (isMounted) {
-          setData(result);
+          setData(result || null);
         }
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -232,6 +228,7 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     };
   }, [position, cardType]);
 
+  // Loading state
   if (loading) {
     return (
       <div className={styles.stagePost}>
@@ -245,14 +242,24 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     );
   }
 
-  if (error || !data) {
+  // Empty state - show placeholder instead of error
+  if (!data) {
     return (
       <div className={styles.stagePost}>
         <div className={styles.header}>
-          <span className={styles.name}>No Data</span>
+          <span className={styles.name}>Anonymous</span>
+          <span className={styles.postNumber}>No.0000000</span>
         </div>
         <div className={styles.comment}>
-          <span className={styles.placeholderComment}>No data available</span>
+          <span className={styles.placeholderComment}>
+            {error || 'No posts available at the moment'}
+          </span>
+        </div>
+        <div className={styles.footer}>
+          <span className={styles.getType}>
+            {cardType.charAt(0).toUpperCase() + cardType.slice(1)} •
+          </span>
+          <span className={styles.checkCount}>Waiting for new posts</span>
         </div>
       </div>
     );

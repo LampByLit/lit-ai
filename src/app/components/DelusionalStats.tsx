@@ -25,52 +25,79 @@ export const DelusionalStats = () => {
           throw new Error('Failed to fetch stats');
         }
         const data = await response.json();
-        setStats(data);
+        
+        // Validate the data structure
+        if (typeof data.percentage === 'number' && 
+            typeof data.level === 'string' && 
+            data.trend && 
+            typeof data.trend.direction === 'string' && 
+            typeof data.trend.amount === 'number') {
+          setStats(data);
+        } else {
+          // If data is invalid, set default values instead of error
+          setStats({
+            level: 'low',
+            percentage: 0,
+            trend: {
+              direction: 'stable',
+              amount: 0
+            }
+          });
+        }
+        setError(null);
       } catch (err) {
         console.error('Error fetching stats:', err);
-        setError('Failed to load stats');
+        // Set default values on error instead of error state
+        setStats({
+          level: 'low',
+          percentage: 0,
+          trend: {
+            direction: 'stable',
+            amount: 0
+          }
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchStats();
+    // Refresh every 10 minutes
+    const interval = setInterval(fetchStats, 600000);
+    return () => clearInterval(interval);
   }, []);
 
+  // Loading state
   if (loading) {
     return (
       <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
-        <div className={styles.loading}>Loading stats...</div>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>
+          Schizophrenia Per Post
+        </h2>
+        <div className={styles.loading}>Analyzing posts...</div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
-        <div className={styles.error}>{error}</div>
-      </div>
-    );
-  }
+  // Always render something meaningful - no error state
+  const displayStats = stats || {
+    level: 'low',
+    percentage: 0,
+    trend: {
+      direction: 'stable',
+      amount: 0
+    }
+  };
 
-  if (!stats) {
-    return (
-      <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
-        <div className={styles.error}>No stats available</div>
-      </div>
-    );
-  }
-
-  const { level, percentage, trend } = stats;
+  const { level, percentage, trend } = displayStats;
   const trendSymbol = trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '↑';
   const trendColor = trend.direction === 'up' ? '#ff4444' : trend.direction === 'down' ? '#44ff44' : '#ffffff';
 
   return (
     <div className={styles.statsContainer}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>
+        Schizophrenia Per Post
+      </h2>
       <div className={styles.statsContent}>
         <div className={styles.mainStat}>
           <div style={{ fontSize: '4rem', lineHeight: '1', fontWeight: 'bold' }}>
