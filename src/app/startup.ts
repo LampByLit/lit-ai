@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { paths, ensureDirectories } from './utils/paths';
+import { initializeData } from './lib/init';
 
 /**
  * Verify that all critical directories exist and are accessible
@@ -230,40 +231,27 @@ async function cleanupDataDirectories() {
   }
 }
 
+let initialized = false;
+
 /**
  * Initialize the application
  * Returns true if initialization was successful
  */
 export async function initializeApp(): Promise<boolean> {
+  // Skip if already initialized
+  if (initialized) {
+    console.log('Application already initialized');
+    return true;
+  }
+
   try {
     console.log('Starting application initialization...');
     
     // Set overall timeout for initialization
     const initPromise = (async () => {
-      // Run cleanup first
-      await cleanupDataDirectories();
-      
-      // Verify directories after cleanup
-      console.log('Verifying directory structure...');
-      const maxAttempts = 3; // Reduced from 5 to 3
-      let attempts = 0;
-      let directoriesReady = false;
-      
-      while (attempts < maxAttempts && !directoriesReady) {
-        attempts++;
-        console.log(`Directory verification attempt ${attempts}/${maxAttempts}`);
-        directoriesReady = await verifyDirectories();
-        
-        if (!directoriesReady && attempts < maxAttempts) {
-          console.log('Waiting 3 seconds before next attempt...'); // Reduced from 5 to 3 seconds
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-      }
-      
-      if (!directoriesReady) {
-        console.warn('Directory structure not fully verified, but continuing...');
-      }
-      
+      // Initialize all required data
+      await initializeData();
+      initialized = true;
       return true;
     })();
 
@@ -277,8 +265,7 @@ export async function initializeApp(): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('Application initialization failed:', error);
-    // Return true anyway to allow the app to start
-    return true;
+    throw error; // Let the app crash if initialization fails
   }
 }
 
@@ -286,12 +273,11 @@ export async function initializeApp(): Promise<boolean> {
 if (require.main === module) {
   initializeApp()
     .then(() => {
-      // Always exit successfully
+      console.log('Startup script completed successfully');
       process.exit(0);
     })
     .catch(error => {
       console.error('Startup script failed:', error);
-      // Exit successfully even on error
-      process.exit(0);
+      process.exit(1); // Exit with error code
     });
 } 
