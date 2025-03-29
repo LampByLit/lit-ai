@@ -55,12 +55,37 @@ async function cleanupDataDirectories() {
   console.log('CWD:', process.cwd());
   console.log('Data Dir:', paths.dataDir);
 
-  // Add specific check for antisemitism-trends.json
-  const trendsFile = path.join(paths.analysisDir, 'antisemitism-trends.json');
-  if (fs.existsSync(trendsFile)) {
-    console.log('Found antisemitism-trends.json, will be cleaned with analysis directory');
-  } else {
-    console.log('antisemitism-trends.json not found');
+  // Create base data directory if it doesn't exist
+  if (!fs.existsSync(paths.dataDir)) {
+    console.log('Creating base data directory:', paths.dataDir);
+    await fs.promises.mkdir(paths.dataDir, { recursive: true });
+    await fs.promises.chmod(paths.dataDir, '777');
+    console.log('Created base data directory with 777 permissions');
+  }
+
+  // Add specific check for required files
+  const requiredFiles = [
+    path.join(paths.analysisDir, 'antisemitism-trends.json'),
+    path.join(paths.analysisDir, 'slur', 'results.json'),
+    path.join(paths.analysisDir, 'get', 'results.json'),
+    path.join(paths.analysisDir, 'reply', 'results.json')
+  ];
+
+  for (const file of requiredFiles) {
+    const dir = path.dirname(file);
+    if (!fs.existsSync(dir)) {
+      console.log(`Creating directory: ${dir}`);
+      await fs.promises.mkdir(dir, { recursive: true });
+      await fs.promises.chmod(dir, '777');
+    }
+    if (!fs.existsSync(file)) {
+      console.log(`Creating empty file: ${file}`);
+      await fs.promises.writeFile(file, JSON.stringify({
+        lastUpdated: Date.now(),
+        results: []
+      }, null, 2));
+      await fs.promises.chmod(file, '666');
+    }
   }
 
   const dirsToClean = [
@@ -82,31 +107,39 @@ async function cleanupDataDirectories() {
     // Clean each directory
     for (const dir of dirsToClean) {
       try {
-        if (fs.existsSync(dir)) {
-          console.log(`Cleaning directory: ${dir}`);
-          const files = await fs.promises.readdir(dir);
-          
-          // Log what we found
-          console.log(`Found ${files.length} files in ${dir}`);
-          
-          for (const file of files) {
-            const filePath = path.join(dir, file);
-            try {
-              const stats = await fs.promises.stat(filePath);
-              console.log(`Removing ${stats.isDirectory() ? 'directory' : 'file'}: ${filePath}`);
-              await fs.promises.rm(filePath, { recursive: true, force: true });
-              console.log(`Successfully removed: ${filePath}`);
-            } catch (error) {
-              console.error(`Error removing ${filePath}:`, error);
-            }
-          }
-          
-          console.log(`Finished cleaning directory: ${dir}`);
-        } else {
-          console.log(`Directory does not exist, skipping: ${dir}`);
+        if (!fs.existsSync(dir)) {
+          console.log(`Creating directory: ${dir}`);
+          await fs.promises.mkdir(dir, { recursive: true });
+          await fs.promises.chmod(dir, '777');
+          console.log(`Created directory with 777 permissions: ${dir}`);
+          continue;
         }
+
+        console.log(`Checking directory: ${dir}`);
+        const files = await fs.promises.readdir(dir);
+        
+        // Log what we found
+        console.log(`Found ${files.length} files in ${dir}`);
+        
+        for (const file of files) {
+          const filePath = path.join(dir, file);
+          try {
+            const stats = await fs.promises.stat(filePath);
+            if (stats.isFile()) {
+              await fs.promises.chmod(filePath, '666');
+              console.log(`Set file permissions to 666: ${filePath}`);
+            } else if (stats.isDirectory()) {
+              await fs.promises.chmod(filePath, '777');
+              console.log(`Set directory permissions to 777: ${filePath}`);
+            }
+          } catch (error) {
+            console.error(`Error setting permissions for ${filePath}:`, error);
+          }
+        }
+        
+        console.log(`Finished checking directory: ${dir}`);
       } catch (error) {
-        console.error(`Error cleaning ${dir}:`, error);
+        console.error(`Error processing ${dir}:`, error);
       }
     }
   })();

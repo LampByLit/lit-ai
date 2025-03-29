@@ -27,9 +27,34 @@ export async function GET() {
     console.log('- Analysis dir exists:', fs.existsSync(path.dirname(resultsPath)));
     console.log('- Analysis file exists:', fs.existsSync(resultsPath));
 
-    // Return empty array if file doesn't exist
+    // Create empty file if it doesn't exist
     if (!fs.existsSync(resultsPath)) {
-      console.log('Meds analysis file does not exist, returning empty array');
+      console.log('Creating empty meds analysis file');
+      const dir = path.dirname(resultsPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        if (process.env.RAILWAY_ENVIRONMENT === 'production') {
+          fs.chmodSync(dir, '777');
+        }
+      }
+      fs.writeFileSync(resultsPath, JSON.stringify({
+        lastUpdated: Date.now(),
+        results: [{
+          timestamp: Date.now(),
+          threadId: -1,
+          postId: -1,
+          medsPosts: [],
+          metadata: {
+            totalPostsAnalyzed: 0,
+            postsWithMeds: 0,
+            lastAnalysis: Date.now()
+          }
+        }]
+      }, null, 2));
+      if (process.env.RAILWAY_ENVIRONMENT === 'production') {
+        fs.chmodSync(resultsPath, '666');
+      }
+      console.log('Created empty meds analysis file');
       return NextResponse.json([]);
     }
 
@@ -55,8 +80,8 @@ export async function GET() {
       const formattedPosts = latestResult.medsPosts.map((post: MedsPost) => ({
         no: post.postId,
         time: Math.floor(post.timestamp / 1000),
-        name: post.name,
-        com: post.comment,
+        name: post.name || 'Anonymous',
+        com: post.comment || '',
         replies: 0,
         threadId: post.threadId
       }));

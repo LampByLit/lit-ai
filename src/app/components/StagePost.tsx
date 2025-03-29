@@ -107,12 +107,13 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
 
         if (cardType === 'meds') {
           const response = await fetch('/api/meds');
-          const json = await response.json();
-
           if (!response.ok) {
-            throw new Error(json.error || 'Failed to fetch meds data');
+            throw new Error(`Failed to fetch meds data: ${response.status}`);
           }
           
+          const json = await response.json();
+          console.log('Received meds data:', json);
+
           if (!Array.isArray(json)) {
             throw new Error('Invalid meds data structure');
           }
@@ -211,9 +212,9 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           setData(result);
         }
       } catch (err) {
+        console.error('Error fetching data:', err);
         if (isMounted) {
           setError(err instanceof Error ? err.message : 'Error fetching data');
-          console.error('Error:', err);
         }
       } finally {
         if (isMounted) {
@@ -244,20 +245,7 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     );
   }
 
-  if (error) {
-    return (
-      <div className={styles.stagePost}>
-        <div className={styles.header}>
-          <span className={styles.name}>No Data</span>
-        </div>
-        <div className={styles.comment}>
-          <span className={styles.placeholderComment}>No data available</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) {
+  if (error || !data) {
     return (
       <div className={styles.stagePost}>
         <div className={styles.header}>
