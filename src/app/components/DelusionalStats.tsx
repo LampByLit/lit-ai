@@ -91,8 +91,18 @@ export const DelusionalStats = () => {
   };
 
   const { level, percentage, trend } = displayStats;
-  const trendSymbol = trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '↑';
-  const trendColor = trend.direction === 'up' ? '#ff4444' : trend.direction === 'down' ? '#44ff44' : '#ffffff';
+  
+  // Ensure level is a valid string before calling toLowerCase
+  const levelText = typeof level === 'string' ? level.charAt(0).toUpperCase() + level.slice(1) : 'Low';
+  
+  // Ensure trend has valid direction
+  const trendDirection = trend?.direction || 'stable';
+  const trendSymbol = trendDirection === 'up' ? '↑' : trendDirection === 'down' ? '↓' : '↑';
+  const trendColor = trendDirection === 'up' ? '#ff4444' : trendDirection === 'down' ? '#44ff44' : '#ffffff';
+  
+  // Ensure we have valid numbers for display
+  const displayPercentage = typeof percentage === 'number' ? percentage : 0;
+  const displayTrendAmount = typeof trend?.amount === 'number' ? trend.amount : 0;
 
   return (
     <div className={styles.statsContainer}>
@@ -102,11 +112,11 @@ export const DelusionalStats = () => {
       <div className={styles.statsContent}>
         <div className={styles.mainStat}>
           <div style={{ fontSize: '4rem', lineHeight: '1', fontWeight: 'bold' }}>
-            {percentage.toFixed(1)}% <span style={{ fontSize: '1rem' }}>{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+            {displayPercentage.toFixed(1)}% <span style={{ fontSize: '1rem' }}>{levelText}</span>
           </div>
         </div>
         <div className={styles.trendStat} style={{ color: trendColor }}>
-          {trendSymbol} {trend.amount.toFixed(1)}%
+          {trendSymbol} {displayTrendAmount.toFixed(1)}%
         </div>
       </div>
     </div>
