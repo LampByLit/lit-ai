@@ -4,6 +4,7 @@ import { DelusionalMatrix, DelusionalTheme, DelusionalTrend } from '../../types/
 import { paths } from '@/app/utils/paths';
 import path from 'path';
 import fs from 'fs/promises';
+import { existsSync } from 'fs';
 
 // Constants for data management
 const HOURS_TO_KEEP = 48; // Already set to 48 hours (2 days)
@@ -73,11 +74,61 @@ export class DelusionalMatrixAnalyzer {
   private async saveAnalysis(data: unknown) {
     await this.rotateLogs();
     await fs.mkdir(path.dirname(this.latestAnalysisPath), { recursive: true });
+
+    // Save the full analysis
     await fs.writeFile(
       this.latestAnalysisPath,
       JSON.stringify(data, null, 2),
       'utf-8'
     );
+
+    // Save delusional stats separately with the correct structure
+    const delusionalStatsPath = path.resolve(paths.dataDir, 'analysis', 'latest-delusional.json');
+    const delusionalStats = {
+      statistics: {
+        analyzedComments: 0,
+        delusionalComments: 0,
+        percentage: 0
+      },
+      generatedAt: Date.now()
+    };
+
+    // Calculate stats from articles
+    if (Array.isArray((data as any)?.articles?.articles)) {
+      const articles = (data as any).articles.articles;
+      let totalAnalyzed = 0;
+      let totalDelusional = 0;
+
+      for (const article of articles) {
+        if (article?.delusionalStats) {
+          totalAnalyzed += article.delusionalStats.analyzedComments || 0;
+          totalDelusional += article.delusionalStats.delusionalComments || 0;
+        }
+      }
+
+      delusionalStats.statistics.analyzedComments = totalAnalyzed;
+      delusionalStats.statistics.delusionalComments = totalDelusional;
+      delusionalStats.statistics.percentage = totalAnalyzed > 0 
+        ? (totalDelusional / totalAnalyzed) * 100 
+        : 0;
+    }
+
+    // Save current stats as latest
+    await fs.writeFile(
+      delusionalStatsPath,
+      JSON.stringify(delusionalStats, null, 2),
+      'utf-8'
+    );
+
+    // Move previous latest to previous
+    const previousStatsPath = path.resolve(paths.dataDir, 'analysis', 'previous-delusional.json');
+    try {
+      if (existsSync(delusionalStatsPath)) {
+        await fs.copyFile(delusionalStatsPath, previousStatsPath);
+      }
+    } catch (error) {
+      console.error('Failed to save previous stats:', error);
+    }
   }
 
   private shouldUpdateTrend(trends: DelusionalTrend[]): boolean {

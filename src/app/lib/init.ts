@@ -16,6 +16,28 @@ const REQUIRED_FILES: InitialData[] = [
     }
   },
   {
+    path: path.join(paths.analysisDir, 'latest-delusional.json'),
+    initialData: {
+      statistics: {
+        analyzedComments: 0,
+        delusionalComments: 0,
+        percentage: 0
+      },
+      generatedAt: Date.now()
+    }
+  },
+  {
+    path: path.join(paths.analysisDir, 'previous-delusional.json'),
+    initialData: {
+      statistics: {
+        analyzedComments: 0,
+        delusionalComments: 0,
+        percentage: 0
+      },
+      generatedAt: Date.now() - 3600000 // 1 hour ago
+    }
+  },
+  {
     path: path.join(paths.analysisDir, 'slur', 'results.json'),
     initialData: {
       lastUpdated: Date.now(),
