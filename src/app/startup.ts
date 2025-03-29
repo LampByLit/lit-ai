@@ -65,26 +65,89 @@ async function cleanupDataDirectories() {
 
   // Add specific check for required files
   const requiredFiles = [
-    path.join(paths.analysisDir, 'antisemitism-trends.json'),
-    path.join(paths.analysisDir, 'slur', 'results.json'),
-    path.join(paths.analysisDir, 'get', 'results.json'),
-    path.join(paths.analysisDir, 'reply', 'results.json')
-  ];
-
-  for (const file of requiredFiles) {
-    const dir = path.dirname(file);
-    if (!fs.existsSync(dir)) {
-      console.log(`Creating directory: ${dir}`);
-      await fs.promises.mkdir(dir, { recursive: true });
-      await fs.promises.chmod(dir, '777');
-    }
-    if (!fs.existsSync(file)) {
-      console.log(`Creating empty file: ${file}`);
-      await fs.promises.writeFile(file, JSON.stringify({
+    {
+      path: path.join(paths.analysisDir, 'antisemitism-trends.json'),
+      initialData: {
         lastUpdated: Date.now(),
         results: []
-      }, null, 2));
-      await fs.promises.chmod(file, '666');
+      }
+    },
+    {
+      path: path.join(paths.analysisDir, 'slur', 'results.json'),
+      initialData: {
+        lastUpdated: Date.now(),
+        results: [{
+          timestamp: Date.now(),
+          threadId: -1,
+          postId: -1,
+          medsPosts: [],
+          metadata: {
+            totalPostsAnalyzed: 0,
+            postsWithMeds: 0,
+            lastAnalysis: Date.now()
+          }
+        }]
+      }
+    },
+    {
+      path: path.join(paths.analysisDir, 'get', 'results.json'),
+      initialData: {
+        lastUpdated: Date.now(),
+        results: []
+      }
+    },
+    {
+      path: path.join(paths.analysisDir, 'reply', 'results.json'),
+      initialData: {
+        lastUpdated: Date.now(),
+        results: []
+      }
+    },
+    {
+      path: path.join(paths.analysisDir, 'latest-thread.json'),
+      initialData: {
+        lastModified: Date.now(),
+        threadId: null,
+        content: null
+      }
+    },
+    {
+      path: path.join(paths.analysisDir, 'recent-tweets.json'),
+      initialData: {
+        tweets: [],
+        lastUpdated: Date.now()
+      }
+    },
+    {
+      path: path.join(paths.articlesDir, 'latest-article.json'),
+      initialData: {
+        articles: [],
+        lastUpdated: Date.now()
+      }
+    }
+  ];
+
+  for (const { path: filePath, initialData } of requiredFiles) {
+    const dir = path.dirname(filePath);
+    try {
+      if (!fs.existsSync(dir)) {
+        console.log(`Creating directory: ${dir}`);
+        await fs.promises.mkdir(dir, { recursive: true });
+        await fs.promises.chmod(dir, '777');
+      }
+      
+      if (!fs.existsSync(filePath)) {
+        console.log(`Creating empty file: ${filePath}`);
+        await fs.promises.writeFile(filePath, JSON.stringify(initialData, null, 2));
+        await fs.promises.chmod(filePath, '666');
+        console.log(`Created file with initial data: ${filePath}`);
+      } else {
+        // Ensure existing file has proper permissions
+        await fs.promises.chmod(filePath, '666');
+        console.log(`Updated permissions for existing file: ${filePath}`);
+      }
+    } catch (error) {
+      console.error(`Error processing file ${filePath}:`, error);
     }
   }
 
