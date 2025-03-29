@@ -99,6 +99,8 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
 
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
 
     const fetchData = async () => {
       try {
@@ -115,7 +117,7 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           console.log('Received meds data:', json);
 
           // Handle any possible data state gracefully
-          if (!Array.isArray(json)) {
+          if (!Array.isArray(json) || json.length === 0) {
             if (isMounted) {
               setData(null);
               setLoading(false);
@@ -127,19 +129,10 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
           const selectedPost = json[postIndex];
 
-          // Ensure we have a valid post with all required data
-          if (!selectedPost || !selectedPost.no || !selectedPost.com) {
-            if (isMounted) {
-              setData(null);
-              setLoading(false);
-              return;
-            }
-          }
-
           // Create a safe post object with all properties optional
           const safePost = {
-            no: selectedPost?.no,
-            com: selectedPost?.com || '',
+            no: selectedPost?.no || Date.now(),
+            com: selectedPost?.com || 'Waiting for new posts...',
             time: selectedPost?.time || Math.floor(Date.now() / 1000),
             name: selectedPost?.name || 'Anonymous',
             tim: selectedPost?.tim,
@@ -185,7 +178,14 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
 
           if (!selectedPost) {
             if (isMounted) {
-              setData(null);
+              setData({
+                postNumber: Date.now().toString(),
+                comment: 'Waiting for new insights...',
+                checkCount: 0,
+                getType: 'Most Replied',
+                hasImage: false,
+                threadId: Date.now()
+              });
               setLoading(false);
               return;
             }
@@ -193,8 +193,8 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
 
           if (isMounted) {
             setData({
-              postNumber: selectedPost?.no?.toString() || 'Unknown',
-              comment: selectedPost?.com || '',
+              postNumber: selectedPost?.no?.toString() || Date.now().toString(),
+              comment: selectedPost?.com || 'Waiting for new insights...',
               checkCount: selectedPost?.replies || 0,
               getType: 'Most Replied',
               hasImage: selectedPost?.tim !== undefined || selectedPost?.filename !== undefined,
@@ -220,12 +220,28 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
         const result = position === 'top' ? json.getOne : json.getTwo;
         
         if (isMounted) {
-          setData(result || null);
+          if (!result) {
+            setData({
+              postNumber: Date.now().toString(),
+              comment: 'Waiting for GETs...',
+              checkCount: 0,
+              getType: 'GET',
+              hasImage: false,
+              threadId: Date.now()
+            });
+          } else {
+            setData(result);
+          }
         }
       } catch (err) {
         console.error('Error fetching data:', err);
         if (isMounted) {
           setError(err instanceof Error ? err.message : 'Error fetching data');
+          // Retry on error
+          if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(fetchData, 2000 * retryCount); // Exponential backoff
+          }
         }
       } finally {
         if (isMounted) {
@@ -263,18 +279,18 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
       <div className={styles.stagePost}>
         <div className={styles.header}>
           <span className={styles.name}>Anonymous</span>
-          <span className={styles.postNumber}>No.0000000</span>
+          <span className={styles.postNumber}>No.{Date.now()}</span>
         </div>
         <div className={styles.comment}>
           <span className={styles.placeholderComment}>
-            {error || 'No posts available at the moment'}
+            {error || `Waiting for new ${cardType} posts...`}
           </span>
         </div>
         <div className={styles.footer}>
           <span className={styles.getType}>
             {cardType.charAt(0).toUpperCase() + cardType.slice(1)} •
           </span>
-          <span className={styles.checkCount}>Waiting for new posts</span>
+          <span className={styles.checkCount}>Initializing...</span>
         </div>
       </div>
     );
