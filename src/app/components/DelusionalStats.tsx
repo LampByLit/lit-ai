@@ -25,27 +25,30 @@ export const DelusionalStats = () => {
         }
         const data = await response.json();
         
+        // Always set default values if data is invalid
+        const defaultStats = {
+          level: 'low' as const,
+          percentage: 0,
+          trend: {
+            direction: 'stable' as const,
+            amount: 0
+          }
+        };
+        
         // Validate the data structure
-        if (typeof data.percentage === 'number' && 
+        if (data && 
+            typeof data.percentage === 'number' && 
             typeof data.level === 'string' && 
             data.trend && 
             typeof data.trend.direction === 'string' && 
             typeof data.trend.amount === 'number') {
           setStats(data);
         } else {
-          // If data is invalid, set default values instead of error
-          setStats({
-            level: 'low',
-            percentage: 0,
-            trend: {
-              direction: 'stable',
-              amount: 0
-            }
-          });
+          console.warn('Invalid stats data received:', data);
+          setStats(defaultStats);
         }
       } catch (err) {
         console.error('Error fetching stats:', err);
-        // Set default values on error instead of error state
         setStats({
           level: 'low',
           percentage: 0,
@@ -77,7 +80,7 @@ export const DelusionalStats = () => {
     );
   }
 
-  // Always render something meaningful - no error state
+  // Always use displayStats to ensure we have valid data
   const displayStats = stats || {
     level: 'low',
     percentage: 0,

@@ -10,6 +10,7 @@ export interface ArticleAnalysis {
   article: string;
   delusionalStats: ArticleStats;
   generatedAt: number;
+  replies?: number; // Optional replies count for meds posts
 }
 
 export interface ArticleGeneratorConfig {

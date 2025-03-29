@@ -11,6 +11,9 @@ import { initializeData } from './lib/init';
 // Track initialization state
 let initialized = false;
 
+// Longer timeout for Railway production environment
+const INIT_TIMEOUT = process.env.RAILWAY_ENVIRONMENT === 'production' ? 180000 : 60000; // 3 minutes in production, 1 minute locally
+
 /**
  * Initialize the application
  * Returns true if initialization was successful
@@ -24,27 +27,53 @@ export async function initializeApp(): Promise<boolean> {
   }
 
   try {
-    console.log('Starting application initialization...');
+    console.log('=== Starting Application Initialization ===');
+    console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
+    console.log('Timeout:', INIT_TIMEOUT, 'ms');
+    console.log('CWD:', process.cwd());
     
     // Set overall timeout for initialization
     const initPromise = (async () => {
-      // Initialize all required data
-      await initializeData();
-      initialized = true;
-      return true;
+      try {
+        // Initialize all required data
+        await initializeData();
+        initialized = true;
+        console.log('Data initialization completed successfully');
+        return true;
+      } catch (error) {
+        console.error('=== Data Initialization Error ===');
+        console.error('Error:', error);
+        if (error instanceof Error) {
+          console.error('Error name:', error.name);
+          console.error('Error message:', error.message);
+          console.error('Error stack:', error.stack);
+        }
+        throw error;
+      }
     })();
 
-    // Set 60 second timeout for entire initialization
+    // Set timeout based on environment
     const timeoutPromise = new Promise<boolean>((_, reject) => {
-      setTimeout(() => reject(new Error('Initialization timed out after 60 seconds')), 60000);
+      setTimeout(() => {
+        const timeoutError = new Error(`Initialization timed out after ${INIT_TIMEOUT/1000} seconds`);
+        console.error('=== Initialization Timeout ===');
+        console.error(timeoutError);
+        reject(timeoutError);
+      }, INIT_TIMEOUT);
     });
 
     await Promise.race([initPromise, timeoutPromise]);
     console.log('Application initialization completed successfully');
     return true;
   } catch (error) {
-    console.error('Application initialization failed:', error);
-    throw error; // Let the app crash if initialization fails
+    console.error('=== Application Initialization Failed ===');
+    console.error('Error:', error);
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    throw error; // Let the middleware handle the error
   }
 }
 
