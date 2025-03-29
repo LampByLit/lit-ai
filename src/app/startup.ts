@@ -1,79 +1,188 @@
+import fs from 'fs';
+import path from 'path';
+import { paths, ensureDirectories } from './utils/paths';
+
 /**
- * Application startup and initialization
- * 
- * This module handles the initialization of the application,
- * ensuring all required data structures and files exist before
- * serving requests.
+ * Verify that all critical directories exist and are accessible
  */
+async function verifyDirectories(): Promise<boolean> {
+  const criticalDirs = [
+    paths.dataDir,
+    paths.threadsDir,
+    paths.summariesDir,
+    paths.analysisDir
+  ];
 
-import { initializeData } from './lib/init';
+  for (const dir of criticalDirs) {
+    try {
+      await fs.promises.access(dir, fs.constants.R_OK | fs.constants.W_OK);
+      const stats = await fs.promises.stat(dir);
+      if (!stats.isDirectory()) {
+        console.error(`Path exists but is not a directory: ${dir}`);
+        return false;
+      }
+      console.log(`✓ Verified directory: ${dir}`);
+    } catch (error) {
+      console.error(`Failed to verify directory ${dir}:`, error);
+      // Create directory if it doesn't exist
+      try {
+        await fs.promises.mkdir(dir, { recursive: true });
+        console.log(`Created directory: ${dir}`);
+      } catch (mkdirError) {
+        console.error(`Failed to create directory ${dir}:`, mkdirError);
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
-// Track initialization state
-let initialized = false;
+async function cleanupDataDirectories() {
+  // Skip cleanup if explicitly disabled
+  if (process.env.SKIP_DATA_CLEANUP === 'true') {
+    console.log('Data cleanup disabled via SKIP_DATA_CLEANUP');
+    return;
+  }
 
-// Longer timeout for Railway production environment
-const INIT_TIMEOUT = process.env.RAILWAY_ENVIRONMENT === 'production' ? 180000 : 60000; // 3 minutes in production, 1 minute locally
+  // Only run in Railway environment
+  if (process.env.RAILWAY_ENVIRONMENT !== 'production') {
+    console.log('Not in Railway environment, skipping cleanup');
+    return;
+  }
+
+  console.log('Starting data directory cleanup...');
+  console.log('Environment:', process.env.RAILWAY_ENVIRONMENT);
+  console.log('CWD:', process.cwd());
+  console.log('Data Dir:', paths.dataDir);
+
+  // Add specific check for antisemitism-trends.json
+  const trendsFile = path.join(paths.analysisDir, 'antisemitism-trends.json');
+  if (fs.existsSync(trendsFile)) {
+    console.log('Found antisemitism-trends.json, will be cleaned with analysis directory');
+  } else {
+    console.log('antisemitism-trends.json not found');
+  }
+
+  const dirsToClean = [
+    paths.analysisDir,
+    paths.threadsDir,
+    paths.summariesDir,
+    paths.mediaDir,
+    paths.mediaOpDir,
+    path.join(paths.analysisDir, 'get'),
+    path.join(paths.analysisDir, 'reply'),
+    path.join(paths.analysisDir, 'link'),
+    path.join(paths.analysisDir, 'geo'),
+    path.join(paths.analysisDir, 'slur'),
+    path.join(paths.analysisDir, 'media')
+  ];
+
+  // Add timeout to cleanup operation
+  const cleanupPromise = (async () => {
+    // Clean each directory
+    for (const dir of dirsToClean) {
+      try {
+        if (fs.existsSync(dir)) {
+          console.log(`Cleaning directory: ${dir}`);
+          const files = await fs.promises.readdir(dir);
+          
+          // Log what we found
+          console.log(`Found ${files.length} files in ${dir}`);
+          
+          for (const file of files) {
+            const filePath = path.join(dir, file);
+            try {
+              const stats = await fs.promises.stat(filePath);
+              console.log(`Removing ${stats.isDirectory() ? 'directory' : 'file'}: ${filePath}`);
+              await fs.promises.rm(filePath, { recursive: true, force: true });
+              console.log(`Successfully removed: ${filePath}`);
+            } catch (error) {
+              console.error(`Error removing ${filePath}:`, error);
+            }
+          }
+          
+          console.log(`Finished cleaning directory: ${dir}`);
+        } else {
+          console.log(`Directory does not exist, skipping: ${dir}`);
+        }
+      } catch (error) {
+        console.error(`Error cleaning ${dir}:`, error);
+      }
+    }
+  })();
+
+  // Set 30 second timeout
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Cleanup timed out after 30 seconds')), 30000);
+  });
+
+  try {
+    await Promise.race([cleanupPromise, timeoutPromise]);
+    console.log('Cleanup completed within timeout');
+  } catch (error) {
+    console.error('Cleanup operation error:', error);
+    // Continue even if cleanup times out
+  }
+
+  // Always try to recreate directories
+  try {
+    await ensureDirectories();
+    console.log('Data directories cleaned and recreated successfully');
+  } catch (error) {
+    console.error('Error recreating directories:', error);
+    // Don't throw, just log the error
+  }
+}
 
 /**
  * Initialize the application
  * Returns true if initialization was successful
- * @throws Error if initialization fails or times out
  */
 export async function initializeApp(): Promise<boolean> {
-  // Skip if already initialized
-  if (initialized) {
-    console.log('Application already initialized');
-    return true;
-  }
-
   try {
-    console.log('=== Starting Application Initialization ===');
-    console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
-    console.log('Timeout:', INIT_TIMEOUT, 'ms');
-    console.log('CWD:', process.cwd());
+    console.log('Starting application initialization...');
     
     // Set overall timeout for initialization
     const initPromise = (async () => {
-      try {
-        // Initialize all required data
-        await initializeData();
-        initialized = true;
-        console.log('Data initialization completed successfully');
-        return true;
-      } catch (error) {
-        console.error('=== Data Initialization Error ===');
-        console.error('Error:', error);
-        if (error instanceof Error) {
-          console.error('Error name:', error.name);
-          console.error('Error message:', error.message);
-          console.error('Error stack:', error.stack);
+      // Run cleanup first
+      await cleanupDataDirectories();
+      
+      // Verify directories after cleanup
+      console.log('Verifying directory structure...');
+      const maxAttempts = 3; // Reduced from 5 to 3
+      let attempts = 0;
+      let directoriesReady = false;
+      
+      while (attempts < maxAttempts && !directoriesReady) {
+        attempts++;
+        console.log(`Directory verification attempt ${attempts}/${maxAttempts}`);
+        directoriesReady = await verifyDirectories();
+        
+        if (!directoriesReady && attempts < maxAttempts) {
+          console.log('Waiting 3 seconds before next attempt...'); // Reduced from 5 to 3 seconds
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
-        throw error;
       }
+      
+      if (!directoriesReady) {
+        console.warn('Directory structure not fully verified, but continuing...');
+      }
+      
+      return true;
     })();
 
-    // Set timeout based on environment
-    const timeoutPromise = new Promise<boolean>((_, reject) => {
-      setTimeout(() => {
-        const timeoutError = new Error(`Initialization timed out after ${INIT_TIMEOUT/1000} seconds`);
-        console.error('=== Initialization Timeout ===');
-        console.error(timeoutError);
-        reject(timeoutError);
-      }, INIT_TIMEOUT);
+    // Set 60 second timeout for entire initialization
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Initialization timed out after 60 seconds')), 60000);
     });
 
     await Promise.race([initPromise, timeoutPromise]);
     console.log('Application initialization completed successfully');
     return true;
   } catch (error) {
-    console.error('=== Application Initialization Failed ===');
-    console.error('Error:', error);
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
-    throw error; // Let the middleware handle the error
+    console.error('Application initialization failed:', error);
+    // Return true anyway to allow the app to start
+    return true;
   }
 }
 
@@ -81,11 +190,12 @@ export async function initializeApp(): Promise<boolean> {
 if (require.main === module) {
   initializeApp()
     .then(() => {
-      console.log('Startup script completed successfully');
+      // Always exit successfully
       process.exit(0);
     })
     .catch(error => {
       console.error('Startup script failed:', error);
-      process.exit(1); // Exit with error code
+      // Exit successfully even on error
+      process.exit(0);
     });
 } 

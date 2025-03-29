@@ -14,6 +14,7 @@ interface DelusionalStats {
 
 export const DelusionalStats = () => {
   const [stats, setStats] = useState<DelusionalStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,99 +25,60 @@ export const DelusionalStats = () => {
           throw new Error('Failed to fetch stats');
         }
         const data = await response.json();
-        
-        // Always set default values if data is invalid
-        const defaultStats = {
-          level: 'low' as const,
-          percentage: 0,
-          trend: {
-            direction: 'stable' as const,
-            amount: 0
-          }
-        };
-        
-        // Validate the data structure
-        if (data && 
-            typeof data.percentage === 'number' && 
-            typeof data.level === 'string' && 
-            data.trend && 
-            typeof data.trend.direction === 'string' && 
-            typeof data.trend.amount === 'number') {
-          setStats(data);
-        } else {
-          console.warn('Invalid stats data received:', data);
-          setStats(defaultStats);
-        }
+        setStats(data);
       } catch (err) {
         console.error('Error fetching stats:', err);
-        setStats({
-          level: 'low',
-          percentage: 0,
-          trend: {
-            direction: 'stable',
-            amount: 0
-          }
-        });
+        setError('Failed to load stats');
       } finally {
         setLoading(false);
       }
     };
 
     fetchStats();
-    // Refresh every 10 minutes
-    const interval = setInterval(fetchStats, 600000);
-    return () => clearInterval(interval);
   }, []);
 
-  // Loading state
   if (loading) {
     return (
       <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>
-          Schizophrenia Per Post
-        </h2>
-        <div className={styles.loading}>Analyzing posts...</div>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
+        <div className={styles.loading}>Loading stats...</div>
       </div>
     );
   }
 
-  // Always use displayStats to ensure we have valid data
-  const displayStats = stats || {
-    level: 'low',
-    percentage: 0,
-    trend: {
-      direction: 'stable',
-      amount: 0
-    }
-  };
+  if (error) {
+    return (
+      <div className={styles.statsContainer}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
+        <div className={styles.error}>{error}</div>
+      </div>
+    );
+  }
 
-  const { level, percentage, trend } = displayStats;
-  
-  // Ensure level is a valid string before calling toLowerCase
-  const levelText = typeof level === 'string' ? level.charAt(0).toUpperCase() + level.slice(1) : 'Low';
-  
-  // Ensure trend has valid direction
-  const trendDirection = trend?.direction || 'stable';
-  const trendSymbol = trendDirection === 'up' ? '↑' : trendDirection === 'down' ? '↓' : '↑';
-  const trendColor = trendDirection === 'up' ? '#ff4444' : trendDirection === 'down' ? '#44ff44' : '#ffffff';
-  
-  // Ensure we have valid numbers for display
-  const displayPercentage = typeof percentage === 'number' ? percentage : 0;
-  const displayTrendAmount = typeof trend?.amount === 'number' ? trend.amount : 0;
+  if (!stats) {
+    return (
+      <div className={styles.statsContainer}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
+        <div className={styles.error}>No stats available</div>
+      </div>
+    );
+  }
+
+  const { level, percentage, trend } = stats;
+  const trendSymbol = trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '↑';
+  const trendColor = trend.direction === 'up' ? '#ff4444' : trend.direction === 'down' ? '#44ff44' : '#ffffff';
 
   return (
     <div className={styles.statsContainer}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>
-        Schizophrenia Per Post
-      </h2>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
       <div className={styles.statsContent}>
         <div className={styles.mainStat}>
           <div style={{ fontSize: '4rem', lineHeight: '1', fontWeight: 'bold' }}>
-            {displayPercentage.toFixed(1)}% <span style={{ fontSize: '1rem' }}>{levelText}</span>
+            {percentage.toFixed(1)}% <span style={{ fontSize: '1rem' }}>{level.charAt(0).toUpperCase() + level.slice(1)}</span>
           </div>
         </div>
         <div className={styles.trendStat} style={{ color: trendColor }}>
-          {trendSymbol} {displayTrendAmount.toFixed(1)}%
+          {trendSymbol} {trend.amount.toFixed(1)}%
         </div>
       </div>
     </div>

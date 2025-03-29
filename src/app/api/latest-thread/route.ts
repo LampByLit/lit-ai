@@ -1,77 +1,42 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { paths } from '@/app/utils/paths';
+import { paths, ensureDirectories } from '@/app/lib/utils/paths';
 
 export async function GET() {
-  console.log('=== Latest Thread API Debug Info ===');
-  console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
-  console.log('CWD:', process.cwd());
-  console.log('Data Dir:', paths.dataDir);
-
   try {
-    const threadPath = path.resolve(paths.analysisDir, 'latest-thread.json');
-    console.log('Latest thread file path:', threadPath);
+    // Ensure directories exist
+    ensureDirectories();
 
-    // Log directory structure
-    console.log('Directory exists check:');
-    console.log('- Analysis dir exists:', fs.existsSync(path.dirname(threadPath)));
-    console.log('- Thread file exists:', fs.existsSync(threadPath));
+    // Use paths utility to get threads directory
+    const threadsDir = paths.threadsDir;
 
-    // Create empty file if it doesn't exist
-    if (!fs.existsSync(threadPath)) {
-      console.log('Creating empty thread file');
-      const dir = path.dirname(threadPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-        if (process.env.RAILWAY_ENVIRONMENT === 'production') {
-          fs.chmodSync(dir, '777');
-        }
-      }
-      fs.writeFileSync(threadPath, JSON.stringify({
-        lastModified: Date.now(),
-        threadId: null,
-        content: null
-      }, null, 2));
-      if (process.env.RAILWAY_ENVIRONMENT === 'production') {
-        fs.chmodSync(threadPath, '666');
-      }
-      console.log('Created empty thread file');
-      return NextResponse.json({
-        lastModified: Date.now(),
-        threadId: null,
-        content: null
-      });
+    // Check if directory exists
+    if (!fs.existsSync(threadsDir)) {
+      return NextResponse.json({ error: 'Threads directory not found' }, { status: 404 });
     }
 
-    try {
-      const data = JSON.parse(fs.readFileSync(threadPath, 'utf-8'));
-      console.log('Successfully read thread file');
-      
-      if (!data || typeof data !== 'object') {
-        console.log('Invalid thread data structure, returning empty data');
-        return NextResponse.json({
-          lastModified: Date.now(),
-          threadId: null,
-          content: null
-        });
-      }
+    // List all JSON files
+    const files = fs.readdirSync(threadsDir)
+      .filter(file => file.endsWith('.json'))
+      .map(file => ({
+        name: file,
+        path: path.join(threadsDir, file),
+        mtime: fs.statSync(path.join(threadsDir, file)).mtime
+      }))
+      .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 
-      return NextResponse.json(data);
-    } catch (error) {
-      console.error('Error reading thread file:', error);
-      return NextResponse.json({
-        lastModified: Date.now(),
-        threadId: null,
-        content: null
-      });
+    if (files.length === 0) {
+      return NextResponse.json({ error: 'No thread files found' }, { status: 404 });
     }
-  } catch (error) {
-    console.error('Error in latest-thread API:', error);
+
+    // Return the most recent file's modified time
     return NextResponse.json({
-      lastModified: Date.now(),
-      threadId: null,
-      content: null
+      lastModified: files[0].mtime.getTime(),
+      threadId: files[0].name.replace('.json', '')
     });
+  } catch (error) {
+    console.error('Error getting latest thread:', error);
+    return NextResponse.json({ error: 'Failed to get latest thread' }, { status: 500 });
   }
 } 

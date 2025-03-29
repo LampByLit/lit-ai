@@ -4,7 +4,7 @@ import { paths } from '@/app/utils/paths';
 import { Thread, AnalyzerResult, AnalyzerStorage, Analyzer } from '../../types/interfaces';
 
 // Configuration constants
-const MAX_RESULT_AGE_DAYS = 2;
+const MAX_RESULT_AGE_DAYS = 3;
 const MAX_CHUNK_SIZE = 50 * 1024 * 1024; // 50MB per chunk
 const MIN_DISK_SPACE = 500 * 1024 * 1024; // 500MB minimum free space
 const MAX_CHUNKS = 5; // Maximum number of chunk files to keep

@@ -99,8 +99,6 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
 
   useEffect(() => {
     let isMounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
 
     const fetchData = async () => {
       try {
@@ -109,53 +107,37 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
 
         if (cardType === 'meds') {
           const response = await fetch('/api/meds');
+          const json = await response.json();
+
           if (!response.ok) {
-            throw new Error(`Failed to fetch meds data: ${response.status}`);
+            throw new Error(json.error || 'Failed to fetch meds data');
           }
           
-          const json = await response.json();
-          console.log('Received meds data:', json);
-
-          // Handle any possible data state gracefully
-          if (!Array.isArray(json) || json.length === 0) {
-            if (isMounted) {
-              setData(null);
-              setLoading(false);
-              return;
-            }
+          if (!Array.isArray(json)) {
+            throw new Error('Invalid meds data structure');
           }
 
-          // Select post based on position, but handle empty array
+          // Select post based on position
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
           const selectedPost = json[postIndex];
 
-          // Create a safe post object with all properties optional
-          const safePost = {
-            no: selectedPost?.no || Date.now(),
-            com: selectedPost?.com || 'Waiting for new posts...',
-            time: selectedPost?.time || Math.floor(Date.now() / 1000),
-            name: selectedPost?.name || 'Anonymous',
-            tim: selectedPost?.tim,
-            filename: selectedPost?.filename,
-            ext: selectedPost?.ext,
-            sub: selectedPost?.sub,
-            resto: selectedPost?.resto,
-            threadId: selectedPost?.threadId || selectedPost?.resto || selectedPost?.no
-          };
+          if (!selectedPost || !selectedPost.no) {
+            throw new Error(`No post data for position ${position}`);
+          }
 
           if (isMounted) {
             setData({
-              postNumber: safePost.no.toString(),
-              comment: safePost.com,
+              postNumber: selectedPost.no.toString(),
+              comment: selectedPost.com || '',
               checkCount: 0,
               getType: 'Meds Post',
-              hasImage: safePost.tim !== undefined || safePost.filename !== undefined,
-              filename: safePost.filename,
-              ext: safePost.ext,
-              tim: safePost.tim,
-              sub: safePost.sub,
-              resto: safePost.resto,
-              threadId: safePost.threadId
+              hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
+              filename: selectedPost.filename,
+              ext: selectedPost.ext,
+              tim: selectedPost.tim,
+              sub: selectedPost.sub,
+              resto: selectedPost.resto,
+              threadId: selectedPost.threadId
             });
           }
           return;
@@ -165,51 +147,41 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           const response = await fetch('/api/reply');
           const json = await response.json();
 
-          if (!response.ok || !Array.isArray(json)) {
-            if (isMounted) {
-              setData(null);
-              setLoading(false);
-              return;
-            }
+          if (!response.ok) {
+            throw new Error(json.error || 'Failed to fetch reply data');
           }
           
+          if (!Array.isArray(json)) {
+            throw new Error('Invalid reply data structure');
+          }
+
+          // Select post based on position
           const postIndex = position === 'top' ? 0 : position === 'middle' ? 1 : 2;
           const selectedPost = json[postIndex];
 
-          if (!selectedPost) {
-            if (isMounted) {
-              setData({
-                postNumber: Date.now().toString(),
-                comment: 'Waiting for new insights...',
-                checkCount: 0,
-                getType: 'Most Replied',
-                hasImage: false,
-                threadId: Date.now()
-              });
-              setLoading(false);
-              return;
-            }
+          if (!selectedPost || !selectedPost.no) {
+            throw new Error(`No post data for position ${position}`);
           }
 
           if (isMounted) {
             setData({
-              postNumber: selectedPost?.no?.toString() || Date.now().toString(),
-              comment: selectedPost?.com || 'Waiting for new insights...',
-              checkCount: selectedPost?.replies || 0,
+              postNumber: selectedPost.no.toString(),
+              comment: selectedPost.com || '',
+              checkCount: selectedPost.replies || 0,
               getType: 'Most Replied',
-              hasImage: selectedPost?.tim !== undefined || selectedPost?.filename !== undefined,
-              filename: selectedPost?.filename,
-              ext: selectedPost?.ext,
-              tim: selectedPost?.tim,
-              sub: selectedPost?.sub,
-              resto: selectedPost?.resto,
-              threadId: selectedPost?.threadId
+              hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
+              filename: selectedPost.filename,
+              ext: selectedPost.ext,
+              tim: selectedPost.tim,
+              sub: selectedPost.sub,
+              resto: selectedPost.resto,
+              threadId: selectedPost.threadId
             });
           }
           return;
         }
 
-        // For GETs card
+        // For GETs card, fetch GET data
         const response = await fetch('/api/significant-gets');
         const json = await response.json();
 
@@ -218,30 +190,17 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
         }
 
         const result = position === 'top' ? json.getOne : json.getTwo;
-        
+        if (!result) {
+          throw new Error(`No ${position} GET data available`);
+        }
+
         if (isMounted) {
-          if (!result) {
-            setData({
-              postNumber: Date.now().toString(),
-              comment: 'Waiting for GETs...',
-              checkCount: 0,
-              getType: 'GET',
-              hasImage: false,
-              threadId: Date.now()
-            });
-          } else {
-            setData(result);
-          }
+          setData(result);
         }
       } catch (err) {
-        console.error('Error fetching data:', err);
         if (isMounted) {
           setError(err instanceof Error ? err.message : 'Error fetching data');
-          // Retry on error
-          if (retryCount < maxRetries) {
-            retryCount++;
-            setTimeout(fetchData, 2000 * retryCount); // Exponential backoff
-          }
+          console.error('Error:', err);
         }
       } finally {
         if (isMounted) {
@@ -259,7 +218,6 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     };
   }, [position, cardType]);
 
-  // Loading state
   if (loading) {
     return (
       <div className={styles.stagePost}>
@@ -273,24 +231,27 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     );
   }
 
-  // Empty state - show placeholder instead of error
+  if (error) {
+    return (
+      <div className={styles.stagePost}>
+        <div className={styles.header}>
+          <span className={styles.name}>Error</span>
+        </div>
+        <div className={styles.comment}>
+          <span className={styles.placeholderComment}>{error}</span>
+        </div>
+      </div>
+    );
+  }
+
   if (!data) {
     return (
       <div className={styles.stagePost}>
         <div className={styles.header}>
-          <span className={styles.name}>Anonymous</span>
-          <span className={styles.postNumber}>No.{Date.now()}</span>
+          <span className={styles.name}>No Data</span>
         </div>
         <div className={styles.comment}>
-          <span className={styles.placeholderComment}>
-            {error || `Waiting for new ${cardType} posts...`}
-          </span>
-        </div>
-        <div className={styles.footer}>
-          <span className={styles.getType}>
-            {cardType.charAt(0).toUpperCase() + cardType.slice(1)} •
-          </span>
-          <span className={styles.checkCount}>Initializing...</span>
+          <span className={styles.placeholderComment}>No data available</span>
         </div>
       </div>
     );

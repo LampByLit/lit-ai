@@ -19,16 +19,6 @@ interface TrendInfo {
   amount: number;
 }
 
-// Default stats to return when no data is available
-const DEFAULT_STATS = {
-  level: 'low' as const,
-  percentage: 0,
-  trend: {
-    direction: 'stable' as TrendDirection,
-    amount: 0
-  }
-};
-
 export async function GET() {
   try {
     const statsPath = path.resolve(paths.dataDir, 'analysis', 'latest-delusional.json');
@@ -37,19 +27,19 @@ export async function GET() {
     try {
       await fs.access(statsPath);
     } catch {
-      console.log('Stats file not found, returning defaults');
-      return NextResponse.json(DEFAULT_STATS);
+      return NextResponse.json({
+        level: 'low',
+        percentage: 0,
+        trend: {
+          direction: 'stable' as TrendDirection,
+          amount: 0
+        }
+      });
     }
 
     // Read current stats
     const currentStatsRaw = await fs.readFile(statsPath, 'utf-8');
     const currentStats: DelusionalStats = JSON.parse(currentStatsRaw);
-
-    // Validate current stats
-    if (!currentStats?.statistics?.percentage) {
-      console.log('Invalid stats data in file, returning defaults');
-      return NextResponse.json(DEFAULT_STATS);
-    }
 
     // Read previous stats if they exist
     const previousStatsPath = path.resolve(paths.dataDir, 'analysis', 'previous-delusional.json');
@@ -59,24 +49,24 @@ export async function GET() {
       const previousStatsRaw = await fs.readFile(previousStatsPath, 'utf-8');
       previousStats = JSON.parse(previousStatsRaw);
     } catch {
-      console.log('No previous stats found');
+      // Previous stats don't exist, that's okay
     }
 
-    // Calculate trend with proper validation
+    // Calculate trend
     const trend: TrendInfo = {
       direction: 'stable',
       amount: 0
     };
 
-    if (previousStats?.statistics?.percentage != null) {
+    if (previousStats) {
       const diff = currentStats.statistics.percentage - previousStats.statistics.percentage;
       trend.direction = diff > 0 ? 'up' : diff < 0 ? 'down' : 'stable';
       trend.amount = Math.abs(diff);
     }
 
-    // Determine level based on percentage with validation
-    const percentage = currentStats.statistics.percentage || 0;
+    // Determine level based on percentage
     let level: 'low' | 'medium' | 'high' | 'extreme';
+    const percentage = currentStats.statistics.percentage;
 
     if (percentage < 25) {
       level = 'low';
@@ -88,17 +78,21 @@ export async function GET() {
       level = 'extreme';
     }
 
-    const response = {
+    return NextResponse.json({
       level,
       percentage,
       trend
-    };
-
-    console.log('Returning stats:', response);
-    return NextResponse.json(response);
+    });
 
   } catch (error) {
     console.error('Error in delusional-stats route:', error);
-    return NextResponse.json(DEFAULT_STATS);
+    return NextResponse.json({
+      level: 'low',
+      percentage: 0,
+      trend: {
+        direction: 'stable' as TrendDirection,
+        amount: 0
+      }
+    });
   }
 } 

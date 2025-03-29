@@ -124,26 +124,24 @@ export function ArticleCard({ article: propArticle, index = 0 }: ArticleCardProp
   if (error) return <div className={styles.error}>{error}</div>;
   if (!article) return <div className={styles.loading}>Loading...</div>;
 
-  const { headline, article: content, threadId } = article;
-
-  // Use replies for meds posts, analyzedComments for articles
-  const replyCount = article.replies || article.delusionalStats?.analyzedComments || 0;
+  const { headline, article: content } = article;
+  const { analyzedComments } = article.delusionalStats;
 
   return (
     <Card 
       className={`${styles.container} articleCard`}
       data-article-index={index % 5}
     >
-      <FitText text={headline} threadId={parseInt(threadId)} />
+      <FitText text={headline} threadId={parseInt(article.threadId)} />
       <div className={styles.content}>{content}</div>
       <div className={styles.stats}>
         <a 
-          href={`https://archive.4plebs.org/x/thread/${threadId}`}
+          href={`https://archive.4plebs.org/x/thread/${article.threadId}`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.statsLink}
         >
-          {replyCount} Replies
+          {analyzedComments} Replies
         </a>
       </div>
     </Card>
