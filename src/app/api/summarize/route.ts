@@ -3,6 +3,7 @@ import { loadEnvConfig } from '@next/env';
 import { Summarizer } from '@/app/lib/Summarizer';
 import { loadAllThreads } from '@/app/utils/fileLoader';
 import { selectThreads } from '@/app/utils/threadSelector';
+import { paths, ensureDirectories } from '@/app/lib/utils/paths';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -20,20 +21,23 @@ export async function POST() {
     }
     console.log('API key verified');
 
+    // Ensure directories exist
+    console.log('Ensuring directories exist...');
+    await ensureDirectories();
+
     // Load all threads from the threads directory
-    const threadsDir = path.resolve(process.cwd(), 'data', 'threads');
-    console.log('Looking for threads in:', threadsDir);
+    console.log('Looking for threads in:', paths.threadsDir);
     
     // Check if directory exists
     try {
-      await fs.access(threadsDir);
+      await fs.access(paths.threadsDir);
       console.log('Threads directory exists');
     } catch (e) {
       console.error('Threads directory not found:', e);
-      throw new Error(`Threads directory not found at ${threadsDir}`);
+      throw new Error(`Threads directory not found at ${paths.threadsDir}`);
     }
 
-    const allThreads = await loadAllThreads(threadsDir);
+    const allThreads = await loadAllThreads(paths.threadsDir);
     console.log(`Loaded ${allThreads.length} threads`);
     
     if (allThreads.length === 0) {
@@ -62,13 +66,8 @@ export async function POST() {
     const { articles, matrix, bigPicture } = await summarizer.summarize(threadsToAnalyze);
     console.log('Analysis complete');
 
-    // Save results
-    const outputPath = path.resolve(
-      process.cwd(),
-      'data',
-      'analysis',
-      'latest-summary.json'
-    );
+    // Save results using paths utility
+    const outputPath = paths.analyzerResultsFile('latest-summary');
     
     // Ensure the directory exists
     await fs.mkdir(path.dirname(outputPath), { recursive: true });

@@ -4,14 +4,52 @@ import cron from 'node-cron';
 import { scrape } from './scraper';
 import { loadAllThreads } from '../utils/fileLoader';
 import { selectThreads } from '../utils/threadSelector';
+import { paths, ensureDirectories } from '../lib/utils/paths';
+import fs from 'fs/promises';
 
 async function runScraperJob() {
+    console.log('Starting scheduled scraper job...');
     await scrape();
+    console.log('Scheduled scraper job completed');
 }
 
 async function runSummarizerJob() {
-  const summarizer = new Summarizer(process.env.DEEPSEEK_API_KEY!);
-  const allThreads = await loadAllThreads(path.resolve(process.cwd(), 'data', 'threads'));
+  try {
+    console.log('Starting scheduled summarizer job...');
+
+    // Ensure API key is available
+    if (!process.env.DEEPSEEK_API_KEY) {
+      throw new Error('DEEPSEEK_API_KEY environment variable is not set');
+    }
+
+    // Ensure directories exist
+    console.log('Ensuring directories exist...');
+    await ensureDirectories();
+
+    // Verify threads directory exists
+    console.log('Looking for threads in:', paths.threadsDir);
+    try {
+      await fs.access(paths.threadsDir);
+      console.log('Threads directory exists');
+    } catch (e) {
+      console.error('Threads directory not found:', e);
+      throw new Error(`Threads directory not found at ${paths.threadsDir}`);
+    }
+
+    // Initialize summarizer
+    const summarizer = new Summarizer(process.env.DEEPSEEK_API_KEY);
+    
+    // Load and validate threads
+    console.log('Loading threads...');
+    const allThreads = await loadAllThreads(paths.threadsDir);
+    console.log(`Loaded ${allThreads.length} threads`);
+    
+    if (allThreads.length === 0) {
+      throw new Error('No threads found to analyze');
+    }
+
+    // Select threads for analysis
+    console.log('Selecting threads for analysis...');
     const selection = selectThreads(allThreads);
     const threadsToAnalyze = [
       ...selection.topByPosts,
@@ -19,7 +57,15 @@ async function runSummarizerJob() {
       ...selection.mediumPosts,
       ...selection.lowPosts
     ];
-  await summarizer.summarize(threadsToAnalyze);
+
+    // Run summarization
+    console.log(`Starting analysis of ${threadsToAnalyze.length} threads...`);
+    await summarizer.summarize(threadsToAnalyze);
+    console.log('Scheduled summarizer job completed');
+  } catch (error) {
+    console.error('Scheduled summarizer job failed:', error);
+    throw error; // Re-throw to trigger scheduler's error handling
+  }
 }
 
 export class Scheduler {
@@ -53,6 +99,10 @@ export class Scheduler {
 
   async start(): Promise<void> {
     try {
+      // Ensure directories exist on startup
+      console.log('Ensuring directories exist before starting scheduler...');
+      await ensureDirectories();
+      
       this.scrapeJob?.start();
       this.summarizeJob?.start();
       console.log('Started all scheduled jobs');
