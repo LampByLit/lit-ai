@@ -2,25 +2,58 @@
  * Safe file system operations with proper error handling
  */
 
-import fs from 'fs/promises';
+import { mkdir, writeFile, readFile, unlink, chmod } from 'fs/promises';
 import { existsSync } from 'fs';
-import path from 'path';
+import { resolve } from 'path';
+import { getDataDir } from './env';
+import { rename, readdir } from 'fs/promises';
+
+// Define known subdirectories
+const KNOWN_DIRS = [
+  '',  // base data dir
+  'threads',
+  'summaries',
+  'analysis',
+  'media',
+  'media-op',
+  'logs',
+  'articles',
+  'analysis/get',
+  'analysis/reply',
+  'analysis/link',
+  'analysis/geo',
+  'analysis/slur',
+  'analysis/media'
+] as const;
+
+type KnownDir = typeof KNOWN_DIRS[number];
 
 /**
  * Ensures a directory exists, creating it if necessary
+ * Returns the full path to the directory
  */
-export async function ensureDir(dir: string): Promise<void> {
+export async function ensureDir(subPath?: KnownDir | string): Promise<string> {
+  const baseDir = getDataDir();
+  const dirPath = subPath ? resolve(baseDir, subPath) : baseDir;
+  
   try {
-    if (!existsSync(dir)) {
-      await fs.mkdir(dir, { recursive: true });
-      console.log(`Created directory: ${dir}`);
+    await mkdir(dirPath, { recursive: true });
+    
+    // Set directory permissions in Railway
+    if (process.env.RAILWAY_ENVIRONMENT === 'production') {
+      await chmod(dirPath, 0o777);
     }
-
-    // Always set directory permissions to be fully accessible
-    await fs.chmod(dir, 0o777);
-    console.log(`Set directory permissions for ${dir} to 777`);
+    
+    return dirPath;
   } catch (error) {
-    console.error(`Failed to ensure directory ${dir}:`, error);
+    // EEXIST means directory already exists - that's fine
+    if (error instanceof Error && (error as any).code === 'EEXIST') {
+      // Still try to set permissions
+      if (process.env.RAILWAY_ENVIRONMENT === 'production') {
+        await chmod(dirPath, 0o777).catch(() => {});
+      }
+      return dirPath;
+    }
     throw error;
   }
 }
@@ -39,28 +72,29 @@ export async function safeWriteFile(
   try {
     // Ensure the directory exists if requested
     if (ensureDirectory) {
-      await ensureDir(path.dirname(filePath));
+      await ensureDir(resolve(filePath, '..'));
     }
 
     // Write to temporary file first
-    await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
+    await writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
 
-    // Always set file permissions to be readable
-    await fs.chmod(tempPath, 0o666);
-    console.log(`Set file permissions for ${tempPath} to 666`);
+    // Set file permissions in Railway
+    if (process.env.RAILWAY_ENVIRONMENT === 'production') {
+      await chmod(tempPath, 0o666);
+    }
 
     // Rename temporary file to target file (atomic operation)
-    await fs.rename(tempPath, filePath);
+    await rename(tempPath, filePath);
 
-    // Set permissions on final file
-    await fs.chmod(filePath, 0o666);
-    console.log(`Set file permissions for ${filePath} to 666`);
-
+    // Set permissions on final file in Railway
+    if (process.env.RAILWAY_ENVIRONMENT === 'production') {
+      await chmod(filePath, 0o666);
+    }
   } catch (error) {
     // Clean up temporary file if it exists
     try {
       if (existsSync(tempPath)) {
-        await fs.unlink(tempPath);
+        await unlink(tempPath);
       }
     } catch (cleanupError) {
       console.error('Failed to clean up temporary file:', cleanupError);
@@ -74,7 +108,7 @@ export async function safeWriteFile(
  */
 export async function readJsonFile<T>(filePath: string): Promise<T | null> {
   try {
-    const content = await fs.readFile(filePath, 'utf-8');
+    const content = await readFile(filePath, 'utf-8');
     return JSON.parse(content) as T;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -89,7 +123,7 @@ export async function readJsonFile<T>(filePath: string): Promise<T | null> {
  */
 export async function safeDeleteFile(filePath: string): Promise<void> {
   try {
-    await fs.unlink(filePath);
+    await unlink(filePath);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       throw error;
@@ -102,7 +136,7 @@ export async function safeDeleteFile(filePath: string): Promise<void> {
  */
 export async function listFiles(dir: string, ext?: string): Promise<string[]> {
   try {
-    const files = await fs.readdir(dir);
+    const files = await readdir(dir);
     if (ext) {
       return files.filter(f => f.endsWith(ext));
     }

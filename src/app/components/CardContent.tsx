@@ -13,7 +13,7 @@ import { GCPDotCard } from './GCPDotCard';
 import { ThreadCount } from './ThreadCount';
 import { ScraperButton } from './ScraperButton';
 import { SummarizerButton } from './SummarizerButton';
-import RecentXPosts from './RecentXPosts';
+import BlackCard from './BlackCard';
 import ChanCatalogView from './ChanCatalogView';
 
 type CardType = 'content' | 'control' | 'status';
@@ -137,8 +137,8 @@ export const CardContent: React.FC<CardContentProps> = ({ card }) => {
       }
       if (card.id === 'bottom-left-card') {
         return (
-          <div style={{ width: '100%', background: 'white' }}>
-            <RecentXPosts />
+          <div style={{ width: '100%', background: '#1a1a1a' }}>
+            <BlackCard />
           </div>
         );
       }
