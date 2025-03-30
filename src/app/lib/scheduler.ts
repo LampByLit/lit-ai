@@ -41,12 +41,12 @@ export class Scheduler {
   private initializeJobs() {
     // Schedule jobs at specific times
     this.scrapeJob = cron.schedule('0 */2 * * *', runScraperJob, {
-      scheduled: false,
+      scheduled: true,
       timezone: 'UTC'
     });
 
-    this.summarizeJob = cron.schedule('15 */2 * * *', runSummarizerJob, {
-      scheduled: false,
+    this.summarizeJob = cron.schedule('30 21 * * *', runSummarizerJob, {
+      scheduled: true,
       timezone: 'UTC'
     });
   }
