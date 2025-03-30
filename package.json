@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "tsx src/app/startup.ts && next start",
+    "start": "next start",
     "lint": "next lint",
     "scrape": "tsx src/app/lib/scraper/index.ts",
     "summarize": "tsx src/scripts/summarize.ts",

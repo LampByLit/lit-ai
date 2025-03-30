@@ -62,5 +62,5 @@ export function getDataDir(): string {
   }
   
   // Default to data directory in project root for local dev
-  return path.resolve(process.cwd(), 'data');
+  return './data';
 } 
