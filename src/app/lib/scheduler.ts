@@ -1,4 +1,3 @@
-import path from 'path';
 import { Summarizer } from './Summarizer';
 import cron from 'node-cron';
 import { scrape } from './scraper';
