@@ -413,7 +413,4 @@ if (require.main === module) {
       console.error('Scraper failed:', error);
       process.exit(1);
     });
-}
-
-// Export for use in other modules
-export { scrape }; 
+} 
