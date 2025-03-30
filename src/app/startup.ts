@@ -1,6 +1,5 @@
 import fs from 'fs';
-import path from 'path';
-import { paths, ensureDirectories } from './utils/paths';
+import { paths } from './utils/paths';
 
 /**
  * Verify that all critical directories exist and are accessible
