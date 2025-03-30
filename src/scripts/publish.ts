@@ -3,26 +3,47 @@ import path from 'path';
 import { paths, ensureDirectories } from '../app/lib/utils/paths';
 
 interface PublicData {
-  significantGets: {
-    postNumber: string;
-    comment: string;
-    checkCount: number;
-    getType: string;
-    hasImage?: boolean;
-  }[];
-  keyInsights: {
-    postNumber: string;
-    comment: string;
-    replies: number;
-  }[];
+  significantGets: SignificantGet[];
+  keyInsights: KeyInsight[];
   updatedAt: number;
 }
 
-async function loadSignificantGets() {
+interface SignificantGet {
+  postNumber: string;
+  comment: string;
+  checkCount: number;
+  getType: string;
+  hasImage?: boolean;
+}
+
+interface KeyInsight {
+  postNumber: string;
+  comment: string;
+  replies: number;
+}
+
+interface GetAnalyzerResult {
+  metadata: {
+    postNo: number;
+    comment: string;
+    checkCount: number;
+    hasImage?: boolean;
+  };
+  getType: string;
+  digitCount: number;
+}
+
+interface ReplyPost {
+  no: number;
+  com?: string;
+  replies?: number;
+}
+
+async function loadSignificantGets(): Promise<SignificantGet[]> {
   try {
     const filePath = paths.analyzerResultsFile('get');
     const content = await fs.readFile(filePath, 'utf-8');
-    const data = JSON.parse(content);
+    const data = JSON.parse(content) as { results: GetAnalyzerResult[] };
     
     if (!data.results || !Array.isArray(data.results)) {
       console.error('Invalid data structure in gets results');
@@ -30,13 +51,13 @@ async function loadSignificantGets() {
     }
 
     return data.results
-      .sort((a: any, b: any) => {
+      .sort((a, b) => {
         const checkDiff = b.metadata.checkCount - a.metadata.checkCount;
         if (checkDiff !== 0) return checkDiff;
         return b.digitCount - a.digitCount;
       })
       .slice(0, 3)
-      .map((result: any) => ({
+      .map(result => ({
         postNumber: result.metadata.postNo.toString(),
         comment: result.metadata.comment,
         checkCount: result.metadata.checkCount,
@@ -49,19 +70,19 @@ async function loadSignificantGets() {
   }
 }
 
-async function loadKeyInsights() {
+async function loadKeyInsights(): Promise<KeyInsight[]> {
   try {
     const response = await fetch('http://localhost:3000/api/reply');
     if (!response.ok) {
       throw new Error('Failed to fetch reply data');
     }
-    const data = await response.json();
+    const data = await response.json() as ReplyPost[];
     
     if (!Array.isArray(data)) {
       throw new Error('Invalid reply data structure');
     }
 
-    return data.slice(0, 3).map((post: any) => ({
+    return data.slice(0, 3).map(post => ({
       postNumber: post.no.toString(),
       comment: post.com || '',
       replies: post.replies || 0
