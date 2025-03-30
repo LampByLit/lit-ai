@@ -8,7 +8,6 @@ export const env = {
   RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT as string | undefined,
   DATA_DIR: process.env.DATA_DIR as string | undefined,
   DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY as string | undefined,
-  SKIP_DATA_CLEANUP: process.env.SKIP_DATA_CLEANUP as string | undefined,
 } as const;
 
 export type Env = typeof env;

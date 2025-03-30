@@ -37,103 +37,6 @@ async function verifyDirectories(): Promise<boolean> {
   return true;
 }
 
-async function cleanupDataDirectories() {
-  // Skip cleanup if explicitly disabled
-  if (process.env.SKIP_DATA_CLEANUP === 'true') {
-    console.log('Data cleanup disabled via SKIP_DATA_CLEANUP');
-    return;
-  }
-
-  // Only run in Railway environment
-  if (process.env.RAILWAY_ENVIRONMENT !== 'production') {
-    console.log('Not in Railway environment, skipping cleanup');
-    return;
-  }
-
-  console.log('Starting data directory cleanup...');
-  console.log('Environment:', process.env.RAILWAY_ENVIRONMENT);
-  console.log('CWD:', process.cwd());
-  console.log('Data Dir:', paths.dataDir);
-
-  // Add specific check for antisemitism-trends.json
-  const trendsFile = path.join(paths.analysisDir, 'antisemitism-trends.json');
-  if (fs.existsSync(trendsFile)) {
-    console.log('Found antisemitism-trends.json, will be cleaned with analysis directory');
-  } else {
-    console.log('antisemitism-trends.json not found');
-  }
-
-  const dirsToClean = [
-    paths.analysisDir,
-    paths.threadsDir,
-    paths.summariesDir,
-    paths.mediaDir,
-    paths.mediaOpDir,
-    path.join(paths.analysisDir, 'get'),
-    path.join(paths.analysisDir, 'reply'),
-    path.join(paths.analysisDir, 'link'),
-    path.join(paths.analysisDir, 'geo'),
-    path.join(paths.analysisDir, 'slur'),
-    path.join(paths.analysisDir, 'media')
-  ];
-
-  // Add timeout to cleanup operation
-  const cleanupPromise = (async () => {
-    // Clean each directory
-    for (const dir of dirsToClean) {
-      try {
-        if (fs.existsSync(dir)) {
-          console.log(`Cleaning directory: ${dir}`);
-          const files = await fs.promises.readdir(dir);
-          
-          // Log what we found
-          console.log(`Found ${files.length} files in ${dir}`);
-          
-          for (const file of files) {
-            const filePath = path.join(dir, file);
-            try {
-              const stats = await fs.promises.stat(filePath);
-              console.log(`Removing ${stats.isDirectory() ? 'directory' : 'file'}: ${filePath}`);
-              await fs.promises.rm(filePath, { recursive: true, force: true });
-              console.log(`Successfully removed: ${filePath}`);
-            } catch (error) {
-              console.error(`Error removing ${filePath}:`, error);
-            }
-          }
-          
-          console.log(`Finished cleaning directory: ${dir}`);
-        } else {
-          console.log(`Directory does not exist, skipping: ${dir}`);
-        }
-      } catch (error) {
-        console.error(`Error cleaning ${dir}:`, error);
-      }
-    }
-  })();
-
-  // Set 30 second timeout
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Cleanup timed out after 30 seconds')), 30000);
-  });
-
-  try {
-    await Promise.race([cleanupPromise, timeoutPromise]);
-    console.log('Cleanup completed within timeout');
-  } catch (error) {
-    console.error('Cleanup operation error:', error);
-    // Continue even if cleanup times out
-  }
-
-  // Always try to recreate directories
-  try {
-    await ensureDirectories();
-    console.log('Data directories cleaned and recreated successfully');
-  } catch (error) {
-    console.error('Error recreating directories:', error);
-    // Don't throw, just log the error
-  }
-}
-
 /**
  * Initialize the application
  * Returns true if initialization was successful
@@ -144,12 +47,9 @@ export async function initializeApp(): Promise<boolean> {
     
     // Set overall timeout for initialization
     const initPromise = (async () => {
-      // Run cleanup first
-      await cleanupDataDirectories();
-      
-      // Verify directories after cleanup
+      // Verify directories
       console.log('Verifying directory structure...');
-      const maxAttempts = 3; // Reduced from 5 to 3
+      const maxAttempts = 3;
       let attempts = 0;
       let directoriesReady = false;
       
@@ -159,7 +59,7 @@ export async function initializeApp(): Promise<boolean> {
         directoriesReady = await verifyDirectories();
         
         if (!directoriesReady && attempts < maxAttempts) {
-          console.log('Waiting 3 seconds before next attempt...'); // Reduced from 5 to 3 seconds
+          console.log('Waiting 3 seconds before next attempt...');
           await new Promise(resolve => setTimeout(resolve, 3000));
         }
       }
