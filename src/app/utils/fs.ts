@@ -9,7 +9,7 @@ import { getDataDir } from './env';
 import { rename, readdir } from 'fs/promises';
 
 // Define known subdirectories
-const KNOWN_DIRS = [
+export const KNOWN_DIRS = [
   '',  // base data dir
   'threads',
   'summaries',
@@ -47,7 +47,7 @@ export async function ensureDir(subPath?: KnownDir | string): Promise<string> {
     return dirPath;
   } catch (error) {
     // EEXIST means directory already exists - that's fine
-    if (error instanceof Error && (error as any).code === 'EEXIST') {
+    if (error instanceof Error && 'code' in error && error.code === 'EEXIST') {
       // Still try to set permissions
       if (process.env.RAILWAY_ENVIRONMENT === 'production') {
         await chmod(dirPath, 0o777).catch(() => {});
