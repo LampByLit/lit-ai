@@ -103,8 +103,8 @@ export async function GET() {
           return b.digitCount - a.digitCount;
         });
 
-      // Take top 2 gets
-      const [getOne, getTwo] = sortedResults;
+      // Take top 3 gets
+      const [getOne, getTwo, getThree] = sortedResults;
 
       return NextResponse.json({
         getOne: getOne ? {
@@ -126,6 +126,16 @@ export async function GET() {
           filename: getTwo.metadata.filename,
           ext: getTwo.metadata.ext,
           tim: getTwo.metadata.tim
+        } : null,
+        getThree: getThree ? {
+          postNumber: getThree.metadata.postNo.toString(),
+          comment: getThree.metadata.comment,
+          checkCount: getThree.metadata.checkCount,
+          getType: getThree.getType,
+          hasImage: getThree.metadata.hasImage,
+          filename: getThree.metadata.filename,
+          ext: getThree.metadata.ext,
+          tim: getThree.metadata.tim
         } : null
       });
 

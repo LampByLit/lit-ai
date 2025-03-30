@@ -16,6 +16,7 @@ interface Get {
   sub?: string;
   resto?: number;
   threadId?: number;
+  time?: number;
 }
 
 interface StagePostProps {
@@ -50,35 +51,49 @@ function parseComment(html: string): React.ReactNode {
     .replace(/&quot;/g, '"')
     .replace(/&#x27;/g, "'");
 
-  // Split the text into segments, preserving post references
-  const segments = text.split(/(&gt;&gt;|>>)(\d+)/g);
+  // Split into lines first
+  const lines = text.split('\n');
   
-  return (
-    <span>
-      {segments.map((segment, index) => {
-        // Every third element is a post number (after the '>>' match)
-        if (index % 3 === 2) {
-          return (
-            <a
-              key={index}
-              href={`https://archive.4plebs.org/x/post/${segment}/`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.postNumber}
-            >
-              &gt;&gt;{segment}
-            </a>
-          );
-        }
-        // Skip the '>>' matches
-        if (index % 3 === 1) {
-          return null;
-        }
-        // Regular text
-        return segment;
-      })}
-    </span>
-  );
+  // Process each line
+  const processedLines = lines.map((line, lineIndex) => {
+    // Check if line starts with single >
+    if (line.startsWith('>') && !line.startsWith('>>')) {
+      return <span key={lineIndex} className={styles.greentext}>{line}</span>;
+    }
+    
+    // Process post references in the line
+    const segments = line.split(/(&gt;&gt;|>>)(\d+)/g);
+    
+    return (
+      <span key={lineIndex}>
+        {segments.map((segment, index) => {
+          // Every third element is a post number (after the '>>' match)
+          if (index % 3 === 2) {
+            return (
+              <a
+                key={index}
+                href={`https://archive.4plebs.org/x/post/${segment}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.postNumber}
+              >
+                &gt;&gt;{segment}
+              </a>
+            );
+          }
+          // Skip the '>>' matches
+          if (index % 3 === 1) {
+            return null;
+          }
+          // Regular text
+          return segment;
+        })}
+        {lineIndex < lines.length - 1 ? '\n' : null}
+      </span>
+    );
+  });
+
+  return <span>{processedLines}</span>;
 }
 
 /**
@@ -137,7 +152,8 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
               tim: selectedPost.tim,
               sub: selectedPost.sub,
               resto: selectedPost.resto,
-              threadId: selectedPost.threadId
+              threadId: selectedPost.threadId,
+              time: selectedPost.time
             });
           }
           return;
@@ -181,17 +197,21 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
           return;
         }
 
-        // For GETs card, fetch GET data
+        // For GETs, fetch from significant-gets API
         const response = await fetch('/api/significant-gets');
         const json = await response.json();
-
-        if (!response.ok) {
-          throw new Error(json.error || 'Failed to fetch GET data');
+        
+        let result;
+        if (position === 'top') {
+          result = json.getOne;
+        } else if (position === 'middle') {
+          result = json.getTwo;
+        } else {
+          result = json.getThree;
         }
 
-        const result = position === 'top' ? json.getOne : json.getTwo;
         if (!result) {
-          throw new Error(`No ${position} GET data available`);
+          return null;
         }
 
         if (isMounted) {
@@ -282,6 +302,10 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
         {cardType === 'insights' ? (
           <span className={styles.checkCount}>
             {data.checkCount} {data.checkCount === 1 ? 'Reply' : 'Replies'}
+          </span>
+        ) : cardType === 'meds' ? (
+          <span className={styles.timestamp}>
+            {data.time ? new Date(data.time * 1000).toLocaleString() : 'No timestamp'}
           </span>
         ) : (
           <>

@@ -1,25 +1,44 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import { paths, ensureDirectories } from '@/app/lib/utils/paths';
+import { paths, ensureDirectories, validateDirectories } from '@/app/lib/utils/paths';
 
 export async function GET() {
   try {
+    console.log('=== Thread Count Debug Info ===');
+    console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
+    console.log('Current working directory:', process.cwd());
+    console.log('Project root:', process.env.RAILWAY_ENVIRONMENT === 'production' ? '/app' : process.cwd());
+    
     // Ensure directories exist
+    console.log('Ensuring directories exist...');
     ensureDirectories();
+    
+    // Validate directory permissions
+    console.log('Validating directory permissions...');
+    const isValid = validateDirectories();
+    console.log('Directory validation result:', isValid);
 
     // Use paths utility to get threads directory
     const threadsDir = paths.threadsDir;
-
-    // Debug logging
-    console.log('=== Thread Count Debug Info ===');
-    console.log('Threads Dir:', threadsDir);
+    console.log('Threads directory path:', threadsDir);
     
     // Check if directory exists
     const dirExists = fs.existsSync(threadsDir);
     console.log('Directory exists:', dirExists);
-
+    
     if (!dirExists) {
-      return NextResponse.json({ count: 0, exists: false });
+      console.log('Directory does not exist, returning count 0');
+      return NextResponse.json({ 
+        count: 0, 
+        exists: false,
+        debug: {
+          environment: process.env.RAILWAY_ENVIRONMENT || 'local',
+          cwd: process.cwd(),
+          threadsDir,
+          dirExists,
+          isValid
+        }
+      });
     }
 
     // List directory contents
@@ -30,12 +49,25 @@ export async function GET() {
     const jsonFiles = allFiles.filter(file => file.endsWith('.json'));
     console.log('JSON files count:', jsonFiles.length);
     
+    // Try to read the first JSON file to verify permissions
+    if (jsonFiles.length > 0) {
+      try {
+        const firstFile = fs.readFileSync(`${threadsDir}/${jsonFiles[0]}`, 'utf-8');
+        console.log('Successfully read first JSON file');
+      } catch (error) {
+        console.error('Failed to read first JSON file:', error);
+      }
+    }
+    
     return NextResponse.json({
       count: jsonFiles.length,
       exists: true,
       debug: {
+        environment: process.env.RAILWAY_ENVIRONMENT || 'local',
+        cwd: process.cwd(),
         threadsDir,
         dirExists,
+        isValid,
         fileCount: allFiles.length,
         jsonCount: jsonFiles.length
       }
@@ -50,7 +82,11 @@ export async function GET() {
         { 
           error: 'Failed to get thread count', 
           details: error.message,
-          stack: error.stack
+          stack: error.stack,
+          debug: {
+            environment: process.env.RAILWAY_ENVIRONMENT || 'local',
+            cwd: process.cwd()
+          }
         },
         { status: 500 }
       );

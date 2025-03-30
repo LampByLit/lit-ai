@@ -49,8 +49,6 @@
   display: block;
 }
 
-.comment span[class^="quote"],
-.comment span[class*=" quote"],
 .greentext {
   color: #789922;
   display: block;
@@ -76,4 +74,10 @@
 .getType, .checkCount {
   color: #888;
   font-size: 11px;
+}
+
+.timestamp {
+  color: #888;
+  font-size: 11px;
+  font-family: monospace;
 } 

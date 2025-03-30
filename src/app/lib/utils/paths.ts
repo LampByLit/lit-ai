@@ -68,19 +68,39 @@ export function ensureDirectories(): void {
     paths.analysisDir,
     path.resolve(paths.analysisDir, 'slur'),
   ].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      console.log(`Creating directory: ${dir}`);
-      fs.mkdirSync(dir, { recursive: true });
+    try {
+      if (!fs.existsSync(dir)) {
+        console.log(`Creating directory: ${dir}`);
+        fs.mkdirSync(dir, { recursive: true });
+      }
       
-      // Set proper permissions in Railway environment
+      // Always set proper permissions in Railway environment
       if (process.env.RAILWAY_ENVIRONMENT === 'production') {
         try {
+          // First try to set owner permissions
+          fs.chmodSync(dir, '755');
+          console.log(`Set initial permissions (755) for ${dir}`);
+          
+          // If that works, try for wider permissions
           fs.chmodSync(dir, '777');
-          console.log(`Set permissions for ${dir}`);
+          console.log(`Set full permissions (777) for ${dir}`);
+          
+          // Verify the permissions
+          const stats = fs.statSync(dir);
+          console.log(`Final permissions for ${dir}:`, stats.mode.toString(8));
         } catch (error) {
           console.error(`Failed to set permissions for ${dir}:`, error);
+          // Try alternative permission setting
+          try {
+            fs.chmodSync(dir, '755');
+            console.log(`Set alternative permissions (755) for ${dir}`);
+          } catch (altError) {
+            console.error(`Failed to set alternative permissions for ${dir}:`, altError);
+          }
         }
       }
+    } catch (error) {
+      console.error(`Failed to create or set permissions for ${dir}:`, error);
     }
   });
 }
@@ -90,21 +110,48 @@ export function ensureDirectories(): void {
  * Returns true if all directories are writable
  */
 export function validateDirectories(): boolean {
+  const results: { [key: string]: boolean } = {};
+  
   try {
-    // Check if directories exist and are writable
+    // Check each directory
     [paths.dataDir, paths.threadsDir, paths.summariesDir].forEach(dir => {
-      // Ensure directory exists
-      if (!fs.existsSync(dir)) {
-        throw new Error(`Directory does not exist: ${dir}`);
+      console.log(`Validating directory: ${dir}`);
+      
+      // Check existence
+      const exists = fs.existsSync(dir);
+      console.log(`- Directory exists: ${exists}`);
+      
+      if (!exists) {
+        results[dir] = false;
+        return;
       }
       
-      // Test write permission by creating and removing a temp file
-      const testFile = path.join(dir, '.write-test');
-      fs.writeFileSync(testFile, 'test');
-      fs.unlinkSync(testFile);
+      // Check permissions
+      try {
+        const testFile = path.join(dir, '.write-test');
+        fs.writeFileSync(testFile, 'test');
+        fs.unlinkSync(testFile);
+        console.log(`- Write test successful`);
+        results[dir] = true;
+      } catch (error) {
+        console.error(`- Write test failed:`, error);
+        results[dir] = false;
+      }
+      
+      // Get directory stats
+      try {
+        const stats = fs.statSync(dir);
+        console.log(`- Directory permissions:`, stats.mode.toString(8));
+      } catch (error) {
+        console.error(`- Failed to get directory stats:`, error);
+      }
     });
     
-    return true;
+    // Log validation results
+    console.log('Directory validation results:', results);
+    
+    // Return true only if all directories are valid
+    return Object.values(results).every(result => result === true);
   } catch (error) {
     console.error('Directory validation failed:', error);
     return false;
