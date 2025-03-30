@@ -16,18 +16,14 @@ function logPathInfo(label: string, value: string) {
 // Detect if we're running on Railway
 const isRailway = process.env.RAILWAY_ENVIRONMENT === 'production';
 
-// Get the project root directory
-const PROJECT_ROOT = isRailway ? '/app' : process.cwd();
+// In Railway, ALWAYS use /data as the root directory for persistent storage
+// In local development, use a data directory in the project root
+const DATA_DIR = isRailway ? '/data' : path.resolve(process.cwd(), 'data');
 
 // Log environment information
 logPathInfo('Environment', isRailway ? 'Railway' : 'Local');
-logPathInfo('Project Root', PROJECT_ROOT);
-logPathInfo('Process CWD', process.cwd());
-logPathInfo('__dirname', __dirname);
-
-// Always use data directory relative to project root
-const DATA_DIR = path.resolve(PROJECT_ROOT, 'data');
 logPathInfo('Data Directory', DATA_DIR);
+logPathInfo('Process CWD', process.cwd());
 
 // Define all application paths
 export const paths = {
@@ -42,6 +38,9 @@ export const paths = {
   
   // Analysis data storage
   analysisDir: path.resolve(DATA_DIR, 'analysis'),
+  
+  // Media storage
+  mediaDir: path.resolve(DATA_DIR, 'media'),
   
   // Helper to get thread file path by ID
   threadFile: (threadId: string) => path.resolve(DATA_DIR, 'threads', `${threadId}.json`),
@@ -60,29 +59,32 @@ console.log('DEBUG - Threads Dir:', paths.threadsDir);
  * This should be called during application startup
  */
 export function ensureDirectories(): void {
-  // Create directories if they don't exist
-  [
+  const requiredDirs = [
     paths.dataDir,
     paths.threadsDir,
     paths.summariesDir,
     paths.analysisDir,
+    paths.mediaDir,
     path.resolve(paths.analysisDir, 'slur'),
-  ].forEach(dir => {
+    path.resolve(paths.mediaDir, 'OP'),
+  ];
+
+  requiredDirs.forEach(dir => {
     try {
       if (!fs.existsSync(dir)) {
         console.log(`Creating directory: ${dir}`);
         fs.mkdirSync(dir, { recursive: true });
       }
       
-      // Always set proper permissions in Railway environment
-      if (process.env.RAILWAY_ENVIRONMENT === 'production') {
+      // Set proper permissions in Railway environment
+      if (isRailway) {
         try {
           // First try to set owner permissions
-          fs.chmodSync(dir, '755');
+          fs.chmodSync(dir, 0o755);
           console.log(`Set initial permissions (755) for ${dir}`);
           
           // If that works, try for wider permissions
-          fs.chmodSync(dir, '777');
+          fs.chmodSync(dir, 0o777);
           console.log(`Set full permissions (777) for ${dir}`);
           
           // Verify the permissions
@@ -92,7 +94,7 @@ export function ensureDirectories(): void {
           console.error(`Failed to set permissions for ${dir}:`, error);
           // Try alternative permission setting
           try {
-            fs.chmodSync(dir, '755');
+            fs.chmodSync(dir, 0o755);
             console.log(`Set alternative permissions (755) for ${dir}`);
           } catch (altError) {
             console.error(`Failed to set alternative permissions for ${dir}:`, altError);
@@ -114,7 +116,7 @@ export function validateDirectories(): boolean {
   
   try {
     // Check each directory
-    [paths.dataDir, paths.threadsDir, paths.summariesDir].forEach(dir => {
+    [paths.dataDir, paths.threadsDir, paths.summariesDir, paths.mediaDir].forEach(dir => {
       console.log(`Validating directory: ${dir}`);
       
       // Check existence
