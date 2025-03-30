@@ -12,6 +12,7 @@ import { Readable } from 'stream';
 import { ensureDirectories, paths } from '@/app/utils/paths';
 import { Thread, Post, isAxiosError } from '../../types/interfaces';
 import { initializeAnalyzers, analyzeThreads, purgeOldResults } from '../analyzers';
+import { publishData } from '../../../scripts/publish';
 
 // Base URL for 4chan API
 const API_BASE_URL = 'https://a.4cdn.org/x';
@@ -330,13 +331,11 @@ async function cleanOldThreads(): Promise<void> {
 /**
  * Main scraper function
  */
-async function scrape(): Promise<void> {
-  console.log('Starting 4chan /x/ scraper...');
-  
-  // Ensure our data directories exist
-  ensureDirectories();
-  
+export async function scrape(): Promise<boolean> {
   try {
+    console.log('Starting scraper...');
+    await ensureDirectories();
+    
     // Clean up old threads first
     await cleanOldThreads();
     
@@ -388,10 +387,21 @@ async function scrape(): Promise<void> {
     // Clean up old analysis results
     await purgeOldResults();
     
-    console.log('Scraping and analysis complete!');
+    console.log('Scraping completed successfully');
+    
+    // Run publisher after scraping
+    console.log('Running publisher...');
+    const publishSuccess = await publishData();
+    if (publishSuccess) {
+      console.log('Publisher completed successfully');
+    } else {
+      console.error('Publisher failed');
+    }
+    
+    return true;
   } catch (error) {
     console.error('Scraper failed:', error);
-    throw error;
+    return false;
   }
 }
 
