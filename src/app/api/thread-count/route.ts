@@ -52,7 +52,8 @@ export async function GET() {
     // Try to read the first JSON file to verify permissions
     if (jsonFiles.length > 0) {
       try {
-        const firstFile = fs.readFileSync(`${threadsDir}/${jsonFiles[0]}`, 'utf-8');
+        // Just read the file to test permissions, no need to store the content
+        fs.readFileSync(`${threadsDir}/${jsonFiles[0]}`, 'utf-8');
         console.log('Successfully read first JSON file');
       } catch (error) {
         console.error('Failed to read first JSON file:', error);
