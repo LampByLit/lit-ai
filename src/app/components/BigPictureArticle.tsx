@@ -10,6 +10,16 @@ interface BigPictureData {
   };
 }
 
+function processQuotes(text: string): React.ReactNode[] {
+  const segments = text.split(/(".*?")/g);
+  return segments.map((segment, index) => {
+    if (segment.startsWith('"') && segment.endsWith('"')) {
+      return <span key={index} className={styles.quote}>{segment}</span>;
+    }
+    return segment;
+  });
+}
+
 export default function BigPictureArticle() {
   const [article, setArticle] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +57,7 @@ export default function BigPictureArticle() {
     <div className={styles.container}>
       {paragraphs.map((paragraph, index) => (
         <p key={index} className={styles.paragraph}>
-          {paragraph}
+          {processQuotes(paragraph)}
         </p>
       ))}
     </div>

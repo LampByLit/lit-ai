@@ -64,6 +64,11 @@
   color: inherit;
 }
 
+.quote {
+  font-weight: bold;
+  font-style: italic;
+}
+
 .stats {
   display: flex;
   justify-content: flex-start;

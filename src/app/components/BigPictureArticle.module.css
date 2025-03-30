@@ -14,6 +14,11 @@
   font-weight: 500;
 }
 
+.quote {
+  font-weight: bold;
+  font-style: italic;
+}
+
 .error {
   color: #ff4444;
   text-align: center;

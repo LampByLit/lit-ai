@@ -91,6 +91,16 @@ function FitText({ text, threadId }: { text: string; threadId: number }) {
   );
 }
 
+function processQuotes(text: string): React.ReactNode[] {
+  const segments = text.split(/(".*?")/g);
+  return segments.map((segment, index) => {
+    if (segment.startsWith('"') && segment.endsWith('"')) {
+      return <span key={index} className={styles.quote}>{segment}</span>;
+    }
+    return segment;
+  });
+}
+
 export function ArticleCard({ article: propArticle, index = 0 }: ArticleCardProps) {
   const [article, setArticle] = useState<ArticleAnalysis | null>(propArticle || null);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +143,7 @@ export function ArticleCard({ article: propArticle, index = 0 }: ArticleCardProp
       data-article-index={index % 5}
     >
       <FitText text={headline} threadId={parseInt(article.threadId)} />
-      <div className={styles.content}>{content}</div>
+      <div className={styles.content}>{processQuotes(content)}</div>
       <div className={styles.stats}>
         <a 
           href={`https://archive.4plebs.org/x/thread/${article.threadId}`}
