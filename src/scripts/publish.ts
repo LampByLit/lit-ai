@@ -72,21 +72,23 @@ async function loadSignificantGets(): Promise<SignificantGet[]> {
 
 async function loadKeyInsights(): Promise<KeyInsight[]> {
   try {
-    const response = await fetch('http://localhost:3000/api/reply');
-    if (!response.ok) {
-      throw new Error('Failed to fetch reply data');
-    }
-    const data = await response.json() as ReplyPost[];
+    const filePath = paths.analyzerResultsFile('reply');
+    const content = await fs.readFile(filePath, 'utf-8');
+    const data = JSON.parse(content) as { results: ReplyPost[] };
     
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid reply data structure');
+    if (!data.results || !Array.isArray(data.results)) {
+      console.error('Invalid reply data structure');
+      return [];
     }
 
-    return data.slice(0, 3).map(post => ({
-      postNumber: post.no.toString(),
-      comment: post.com || '',
-      replies: post.replies || 0
-    }));
+    return data.results
+      .sort((a, b) => (b.replies || 0) - (a.replies || 0))
+      .slice(0, 3)
+      .map(post => ({
+        postNumber: post.no.toString(),
+        comment: post.com || '',
+        replies: post.replies || 0
+      }));
   } catch (error) {
     console.error('Error loading key insights:', error);
     return [];
