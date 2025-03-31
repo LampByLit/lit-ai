@@ -12,8 +12,7 @@
     "scrape": "tsx src/app/lib/scraper/index.ts",
     "summarize": "tsx src/scripts/summarize.ts",
     "schedule": "tsx src/scripts/schedule.ts",
-    "post": "tsx src/scripts/post-to-x.ts",
-    "publish": "tsx src/scripts/publish.ts"
+    "post": "tsx src/scripts/post-to-x.ts"
   },
   "dependencies": {
     "@types/dotenv": "^6.1.1",
