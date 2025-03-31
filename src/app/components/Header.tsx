@@ -33,16 +33,12 @@ export const Header = () => {
           <div className={styles.dropdown}>
             <a 
               href="https://xpara-ai-production.up.railway.app/"
-              target="_blank"
-              rel="noopener noreferrer"
               className={styles.dropdownItem}
             >
               /x/
             </a>
             <a 
               href="https://pol-ai-production.up.railway.app/"
-              target="_blank"
-              rel="noopener noreferrer"
               className={styles.dropdownItem}
             >
               /pol/
