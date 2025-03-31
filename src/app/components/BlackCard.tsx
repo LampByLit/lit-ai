@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Tweet } from 'react-tweet';
 
 export default function BlackCard() {
+  const [tweetId, setTweetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('https://xposter-production.up.railway.app/latest/xpara')
+      .then(res => res.text())
+      .then(url => {
+        const id = url.split('status/')[1];
+        if (id) setTweetId(id);
+      });
+  }, []);
+
   return (
     <div style={{
       width: '100%',
@@ -11,11 +23,9 @@ export default function BlackCard() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      color: '#333',
-      fontSize: '1.25rem',
-      fontWeight: 500
+      padding: '1rem'
     }}>
-      Coming Soon
+      {tweetId ? <Tweet id={tweetId} /> : <div style={{ color: '#fff' }}>Loading...</div>}
     </div>
   );
 } 
