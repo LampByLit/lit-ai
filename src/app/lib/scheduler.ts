@@ -11,15 +11,25 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 async function runScraperJob() {
-    console.log('Starting scheduled scraper job...');
-    await scrape();
-    console.log('Scheduled scraper job completed');
+    console.log('=== Starting scheduled scraper job ===');
+    console.log('Time:', new Date().toISOString());
+    console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
+    
+    try {
+        await scrape();
+        console.log('Scheduled scraper job completed successfully');
+    } catch (error) {
+        console.error('Scraper job failed:', error);
+        // Don't throw here to keep the cron job running
+    }
 }
 
 async function runSummarizerJob() {
+  console.log('=== Starting scheduled summarizer job ===');
+  console.log('Time:', new Date().toISOString());
+  console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
+  
   try {
-    console.log('Starting scheduled summarizer job...');
-
     // Ensure API key is available
     if (!process.env.DEEPSEEK_API_KEY) {
       throw new Error('DEEPSEEK_API_KEY environment variable is not set');
@@ -64,7 +74,7 @@ async function runSummarizerJob() {
     // Run summarization
     console.log(`Starting analysis of ${threadsToAnalyze.length} threads...`);
     await summarizer.summarize(threadsToAnalyze);
-    console.log('Scheduled summarizer job completed');
+    console.log('Scheduled summarizer job completed successfully');
 
     // Run the publisher
     console.log('Running publisher...');
@@ -77,7 +87,7 @@ async function runSummarizerJob() {
     }
   } catch (error) {
     console.error('Scheduled summarizer job failed:', error);
-    throw error; // Re-throw to trigger scheduler's error handling
+    // Don't throw here to keep the cron job running
   }
 }
 
@@ -87,6 +97,9 @@ export class Scheduler {
   private summarizeJob: cron.ScheduledTask | null = null;
 
   private constructor() {
+    console.log('=== Initializing Scheduler ===');
+    console.log('Time:', new Date().toISOString());
+    console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
     this.initializeJobs();
   }
 
@@ -98,16 +111,32 @@ export class Scheduler {
   }
 
   private initializeJobs() {
+    console.log('Initializing scheduled jobs...');
+    
     // Schedule jobs at specific times
-    this.scrapeJob = cron.schedule('0 */2 * * *', runScraperJob, {
+    this.scrapeJob = cron.schedule('0 */2 * * *', async () => {
+      console.log('Triggering scheduled scraper job');
+      await runScraperJob().catch(error => {
+        console.error('Scraper job error:', error);
+      });
+    }, {
       scheduled: true,
       timezone: 'UTC'
     });
 
-    this.summarizeJob = cron.schedule('30 21 * * *', runSummarizerJob, {
+    this.summarizeJob = cron.schedule('30 21 * * *', async () => {
+      console.log('Triggering scheduled summarizer job');
+      await runSummarizerJob().catch(error => {
+        console.error('Summarizer job error:', error);
+      });
+    }, {
       scheduled: true,
       timezone: 'UTC'
     });
+
+    console.log('Jobs initialized with schedules:');
+    console.log('- Scraper: every 2 hours (0 */2 * * *)');
+    console.log('- Summarizer: daily at 21:30 UTC (30 21 * * *)');
   }
 
   async start(): Promise<void> {
@@ -116,9 +145,14 @@ export class Scheduler {
       console.log('Ensuring directories exist before starting scheduler...');
       await ensureDirectories();
       
+      // Start the jobs
       this.scrapeJob?.start();
       this.summarizeJob?.start();
       console.log('Started all scheduled jobs');
+      
+      // Run scraper job immediately on startup
+      console.log('Running initial scraper job...');
+      await runScraperJob();
     } catch (error) {
       console.error('Failed to start jobs:', error);
       throw error;
