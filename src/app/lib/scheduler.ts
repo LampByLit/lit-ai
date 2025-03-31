@@ -5,6 +5,10 @@ import { loadAllThreads } from '../utils/fileLoader';
 import { selectThreads } from '../utils/threadSelector';
 import { paths, ensureDirectories } from '../lib/utils/paths';
 import fs from 'fs/promises';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 async function runScraperJob() {
     console.log('Starting scheduled scraper job...');
@@ -61,6 +65,16 @@ async function runSummarizerJob() {
     console.log(`Starting analysis of ${threadsToAnalyze.length} threads...`);
     await summarizer.summarize(threadsToAnalyze);
     console.log('Scheduled summarizer job completed');
+
+    // Run the publisher
+    console.log('Running publisher...');
+    try {
+      await execAsync('npm run publish');
+      console.log('Publisher completed successfully');
+    } catch (publishError) {
+      console.error('Publisher failed:', publishError);
+      // Don't throw here, we still want to consider the summarizer job successful
+    }
   } catch (error) {
     console.error('Scheduled summarizer job failed:', error);
     throw error; // Re-throw to trigger scheduler's error handling

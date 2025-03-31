@@ -42,6 +42,9 @@ export const paths = {
   // Media storage
   mediaDir: path.resolve(DATA_DIR, 'media'),
   
+  // Articles storage
+  articlesDir: path.resolve(DATA_DIR, 'articles'),
+  
   // Helper to get thread file path by ID
   threadFile: (threadId: string) => path.resolve(DATA_DIR, 'threads', `${threadId}.json`),
   

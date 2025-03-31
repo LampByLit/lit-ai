@@ -6,6 +6,10 @@ import { selectThreads } from '@/app/utils/threadSelector';
 import { paths, ensureDirectories } from '@/app/lib/utils/paths';
 import path from 'path';
 import fs from 'fs/promises';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 // Load environment variables
 loadEnvConfig(process.cwd());
@@ -79,6 +83,16 @@ export async function POST() {
       'utf-8'
     );
     console.log('Results saved to:', outputPath);
+
+    // Run the publisher
+    console.log('Running publisher...');
+    try {
+      await execAsync('npm run publish');
+      console.log('Publisher completed successfully');
+    } catch (publishError) {
+      console.error('Publisher failed:', publishError);
+      // Don't throw here, we still want to return the summarizer results
+    }
 
     return NextResponse.json({ 
       message: 'Summarizer completed successfully',
