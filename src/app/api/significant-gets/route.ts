@@ -101,9 +101,13 @@ export async function GET() {
           if (checkDiff !== 0) return checkDiff;
           // Then prioritize digit count
           return b.digitCount - a.digitCount;
-        });
+        })
+        // Filter out duplicates based on postNo
+        .filter((result: GetAnalyzerResult, index: number, self: GetAnalyzerResult[]) => 
+          index === self.findIndex((r: GetAnalyzerResult) => r.metadata.postNo === result.metadata.postNo)
+        );
 
-      // Take top 3 gets
+      // Take top 3 unique gets
       const [getOne, getTwo, getThree] = sortedResults;
 
       return NextResponse.json({

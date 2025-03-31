@@ -57,6 +57,7 @@ export const CardContent: React.FC<CardContentProps> = ({ card }) => {
             <h2 style={{ textAlign: 'left' }}>{card.title}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <StagePost position="top" cardType="gets" />
+              <StagePost position="middle" cardType="gets" />
               <StagePost position="bottom" cardType="gets" />
             </div>
           </>
