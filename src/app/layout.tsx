@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "/x/-AI",
+  title: "/lit/-AI",
   description: "AI-powered analysis of online discourse",
   icons: {
     icon: '/favicon.png',

@@ -139,8 +139,8 @@ export const FlippableCard: React.FC<FlippableCardProps> = ({
                     lineHeight: '1.1'
                   }}>
                     This dashboard collects data from 4chan and uses artificial intelligence to analyze, process, summarize, and post results on X.com for research purposes. 
-                    The statistics in this console represent roughly 50% of /x/&apos;s daily activity, with an emphasis on curating data from the catalog&apos;s most active threads. 
-                    Certain elements of this page, including the Schizophrenia per Post, Dominant Themes, and Article Summaries, are generated once daily at 00:00 UTC, all other elements update every two hours and retain data for up to two days.
+                    The statistics in this console represent roughly 50% of /lit/&apos;s daily activity, with an emphasis on curating data from the catalog&apos;s most active threads. 
+                    Certain elements of this page, including the Pseudointellectualism per Post, Dominant Themes, and Article Summaries, are generated once daily at 00:00 UTC, all other elements update every two hours and retain data for up to two days.
                   </p>
                   <p style={{ 
                     fontSize: 'clamp(0.5rem, 1.35vw, 0.85rem)', 
@@ -148,7 +148,7 @@ export const FlippableCard: React.FC<FlippableCardProps> = ({
                     marginBottom: '0.35rem',
                     lineHeight: '1.1'
                   }}>
-                    This project is open source and can be downloaded at <a href="https://github.com/hxkm/xpara-ai" style={{color: '#ffcd42'}}>github.com/hxkm/xpara-ai</a>.
+                    This project is open source and can be downloaded at <a href="https://github.com/hxkm/lit-ai" style={{color: '#ffcd42'}}>github.com/hxkm/lit-ai</a>.
                   </p>
                   <p style={{ 
                     fontSize: 'clamp(0.5rem, 1.35vw, 0.85rem)', 
