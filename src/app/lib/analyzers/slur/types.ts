@@ -1,7 +1,7 @@
 import { AnalyzerResult } from '../../../types/interfaces';
 
 /**
- * Structure for a post containing "meds"
+ * Structure for a post containing "greeks"
  */
 export interface MedsPost {
   postId: number;        // ID of the post
@@ -12,13 +12,13 @@ export interface MedsPost {
 }
 
 /**
- * Result structure for Meds analysis
+ * Result structure for Greeks analysis
  */
 export interface SlurAnalyzerResult extends AnalyzerResult {
-  medsPosts: MedsPost[];  // Posts containing "meds"
+  medsPosts: MedsPost[];  // Posts containing "greeks"
   metadata: {
     totalPostsAnalyzed: number;     // Total number of posts processed
-    postsWithMeds: number;          // Number of posts containing "meds"
+    postsWithMeds: number;          // Number of posts containing "greeks"
     lastAnalysis: number;           // Timestamp of previous analysis
   };
 } 

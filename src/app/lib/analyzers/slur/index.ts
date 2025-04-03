@@ -16,7 +16,7 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   /**
    * Check if text contains the word "greeks"
    */
-  private hasMeds(text: string): boolean {
+  private hasGreeks(text: string): boolean {
     const regex = new RegExp(`\\b${SlurAnalyzer.TRACKED_TERM}\\b`, 'gi');
     return regex.test(text.toLowerCase());
   }
@@ -27,19 +27,19 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   private processPost(
     post: Post,
     thread: Thread,
-    medsPostsSet: Set<MedsPost>
+    greeksPostsSet: Set<MedsPost>
   ): void {
     if (!post.com) return;
 
-    if (this.hasMeds(post.com)) {
-      const medsPost: MedsPost = {
+    if (this.hasGreeks(post.com)) {
+      const greeksPost: MedsPost = {
         postId: post.no,
         threadId: thread.no,
         comment: post.com,
         timestamp: post.time * 1000, // Convert to milliseconds
         name: post.name || 'Anonymous'
       };
-      medsPostsSet.add(medsPost);
+      greeksPostsSet.add(greeksPost);
     }
   }
 
@@ -49,7 +49,7 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   async analyze(threads: Thread[]): Promise<SlurAnalyzerResult[]> {
     console.log('Starting greeks analysis...');
     
-    const medsPostsSet = new Set<MedsPost>();
+    const greeksPostsSet = new Set<MedsPost>();
     let totalPosts = 0;
 
     // Process each thread
@@ -67,20 +67,20 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
             com: thread.com
           },
           thread,
-          medsPostsSet
+          greeksPostsSet
         );
         totalPosts++;
       }
 
       // Process each reply
       for (const post of thread.posts) {
-        this.processPost(post, thread, medsPostsSet);
+        this.processPost(post, thread, greeksPostsSet);
         totalPosts++;
       }
     }
 
     // Convert Set to Array and sort by timestamp (newest first)
-    const medsPosts = Array.from(medsPostsSet)
+    const greeksPosts = Array.from(greeksPostsSet)
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, SlurAnalyzer.MAX_POSTS);
 
@@ -89,10 +89,10 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
       timestamp: Date.now(),
       threadId: threads[0]?.no || -1,
       postId: threads[0]?.posts?.[0]?.no || -1,
-      medsPosts,
+      medsPosts: greeksPosts,
       metadata: {
         totalPostsAnalyzed: totalPosts,
-        postsWithMeds: medsPostsSet.size,
+        postsWithMeds: greeksPostsSet.size,
         lastAnalysis: Date.now()
       }
     }];
