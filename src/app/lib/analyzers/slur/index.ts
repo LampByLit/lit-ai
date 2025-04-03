@@ -1,6 +1,6 @@
 import { Thread, Post } from '../../../types/interfaces';
 import { BaseAnalyzer } from '../base';
-import { SlurAnalyzerResult, MedsPost } from './types';
+import { SlurAnalyzerResult, GreeksPost } from './types';
 
 /**
  * Analyzer for tracking occurrences of "greeks" in posts
@@ -27,12 +27,12 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   private processPost(
     post: Post,
     thread: Thread,
-    greeksPostsSet: Set<MedsPost>
+    greeksPostsSet: Set<GreeksPost>
   ): void {
     if (!post.com) return;
 
     if (this.hasGreeks(post.com)) {
-      const greeksPost: MedsPost = {
+      const greeksPost: GreeksPost = {
         postId: post.no,
         threadId: thread.no,
         comment: post.com,
@@ -49,7 +49,7 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   async analyze(threads: Thread[]): Promise<SlurAnalyzerResult[]> {
     console.log('Starting greeks analysis...');
     
-    const greeksPostsSet = new Set<MedsPost>();
+    const greeksPostsSet = new Set<GreeksPost>();
     let totalPosts = 0;
 
     // Process each thread
@@ -89,10 +89,10 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
       timestamp: Date.now(),
       threadId: threads[0]?.no || -1,
       postId: threads[0]?.posts?.[0]?.no || -1,
-      medsPosts: greeksPosts,
+      greeksPosts: greeksPosts,
       metadata: {
         totalPostsAnalyzed: totalPosts,
-        postsWithMeds: greeksPostsSet.size,
+        postsWithGreeks: greeksPostsSet.size,
         lastAnalysis: Date.now()
       }
     }];

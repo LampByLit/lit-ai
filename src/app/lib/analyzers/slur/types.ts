@@ -3,7 +3,7 @@ import { AnalyzerResult } from '../../../types/interfaces';
 /**
  * Structure for a post containing "greeks"
  */
-export interface MedsPost {
+export interface GreeksPost {
   postId: number;        // ID of the post
   threadId: number;      // ID of the thread containing this post
   comment: string;       // The post content
@@ -15,10 +15,10 @@ export interface MedsPost {
  * Result structure for Greeks analysis
  */
 export interface SlurAnalyzerResult extends AnalyzerResult {
-  medsPosts: MedsPost[];  // Posts containing "greeks"
+  greeksPosts: GreeksPost[];  // Posts containing "greeks"
   metadata: {
     totalPostsAnalyzed: number;     // Total number of posts processed
-    postsWithMeds: number;          // Number of posts containing "greeks"
+    postsWithGreeks: number;          // Number of posts containing "greeks"
     lastAnalysis: number;           // Timestamp of previous analysis
   };
 } 

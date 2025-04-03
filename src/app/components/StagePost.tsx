@@ -17,11 +17,15 @@ interface Get {
   resto?: number;
   threadId?: number;
   time?: number;
+  no?: number;
+  com?: string;
+  replies?: number;
 }
 
 interface StagePostProps {
   position: 'top' | 'middle' | 'bottom';
-  cardType?: 'gets' | 'insights' | 'meds';
+  cardType?: 'gets' | 'insights' | 'meds' | 'greeks';
+  post?: Get;  // Add post prop for direct data passing
 }
 
 function parseComment(html: string, threadId?: number): React.ReactNode {
@@ -107,7 +111,7 @@ function formatCheckCount(count: number): string {
   return `Checked ${count} times`;
 }
 
-export default function StagePost({ position, cardType = 'gets' }: StagePostProps) {
+export default function StagePost({ position, cardType = 'gets', post }: StagePostProps) {
   const [data, setData] = useState<Get | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -115,21 +119,44 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
   useEffect(() => {
     let isMounted = true;
 
+    // If post data is provided directly, use it
+    if (post) {
+      setData({
+        postNumber: (post.no || post.postNumber || '0').toString(),
+        comment: post.com || post.comment || '',
+        checkCount: post.replies || post.checkCount || 0,
+        getType: cardType === 'greeks' ? 'Greeks Post' : cardType === 'meds' ? 'Meds Post' : 'Most Replied',
+        hasImage: post.tim !== undefined || post.filename !== undefined,
+        filename: post.filename,
+        ext: post.ext,
+        tim: post.tim,
+        sub: post.sub,
+        resto: post.resto,
+        threadId: post.threadId,
+        time: post.time,
+        no: post.no,
+        com: post.com,
+        replies: post.replies
+      });
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        if (cardType === 'meds') {
-          const response = await fetch('/api/meds');
+        if (cardType === 'meds' || cardType === 'greeks') {
+          const response = await fetch(cardType === 'greeks' ? '/api/greeks' : '/api/meds');
           const json = await response.json();
 
           if (!response.ok) {
-            throw new Error(json.error || 'Failed to fetch meds data');
+            throw new Error(json.error || `Failed to fetch ${cardType} data`);
           }
           
           if (!Array.isArray(json)) {
-            throw new Error('Invalid meds data structure');
+            throw new Error(`Invalid ${cardType} data structure`);
           }
 
           // Select post based on position
@@ -145,7 +172,7 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
               postNumber: selectedPost.no.toString(),
               comment: selectedPost.com || '',
               checkCount: 0,
-              getType: 'Meds Post',
+              getType: cardType === 'greeks' ? 'Greeks Post' : 'Meds Post',
               hasImage: selectedPost.tim !== undefined || selectedPost.filename !== undefined,
               filename: selectedPost.filename,
               ext: selectedPost.ext,
@@ -153,7 +180,10 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
               sub: selectedPost.sub,
               resto: selectedPost.resto,
               threadId: selectedPost.threadId,
-              time: selectedPost.time
+              time: selectedPost.time,
+              no: selectedPost.no,
+              com: selectedPost.com,
+              replies: selectedPost.replies
             });
           }
           return;
@@ -191,7 +221,11 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
               tim: selectedPost.tim,
               sub: selectedPost.sub,
               resto: selectedPost.resto,
-              threadId: selectedPost.threadId
+              threadId: selectedPost.threadId,
+              time: selectedPost.time,
+              no: selectedPost.no,
+              com: selectedPost.com,
+              replies: selectedPost.replies
             });
           }
           return;
@@ -217,10 +251,10 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
         if (isMounted) {
           setData(result);
         }
-      } catch (err) {
+      } catch (error) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Error fetching data');
-          console.error('Error:', err);
+          console.error(`Error fetching ${cardType} data:`, error);
+          setError(error instanceof Error ? error.message : 'An error occurred');
         }
       } finally {
         if (isMounted) {
@@ -230,13 +264,10 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 600000); // Refresh every 10 minutes
-
     return () => {
       isMounted = false;
-      clearInterval(interval);
     };
-  }, [position, cardType]);
+  }, [position, cardType, post]);
 
   if (loading) {
     return (

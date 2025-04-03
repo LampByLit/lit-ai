@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { paths } from '@/app/utils/paths';
 
-interface MedsPost {
+interface GreeksPost {
   postId: number;
   threadId: number;
   comment: string;
@@ -11,15 +11,29 @@ interface MedsPost {
   name: string;
 }
 
+interface AnalyzerResult {
+  timestamp: number;
+  threadId: number;
+  postId: number;
+  greeksPosts?: GreeksPost[];
+  medsPosts?: GreeksPost[];
+  metadata: {
+    totalPostsAnalyzed: number;
+    postsWithGreeks?: number;
+    postsWithMeds?: number;
+    lastAnalysis: number;
+  };
+}
+
 export async function GET() {
-  console.log('=== Meds API Debug Info ===');
+  console.log('=== Greeks API Debug Info ===');
   console.log('Environment:', process.env.RAILWAY_ENVIRONMENT || 'local');
   console.log('CWD:', process.cwd());
   console.log('Data Dir:', paths.dataDir);
 
   try {
     const resultsPath = path.resolve(paths.dataDir, 'analysis', 'slur', 'results.json');
-    console.log('Meds analysis path:', resultsPath);
+    console.log('Greeks analysis path:', resultsPath);
 
     // Log directory structure
     console.log('Directory exists check:');
@@ -29,9 +43,9 @@ export async function GET() {
 
     // Return 404 if file doesn't exist
     if (!fs.existsSync(resultsPath)) {
-      console.log('Meds analysis file does not exist');
+      console.log('Greeks analysis file does not exist');
       return NextResponse.json(
-        { error: 'No meds data available' },
+        { error: 'No greeks data available' },
         { status: 404 }
       );
     }
@@ -40,9 +54,12 @@ export async function GET() {
       const data = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
       console.log('Successfully read greeks data file');
       
-      const latestResult = Array.isArray(data.results) ? data.results[0] : null;
+      // Find the most recent result that contains greeksPosts
+      const latestResult = Array.isArray(data.results) 
+        ? data.results.find((result: AnalyzerResult) => Array.isArray(result.greeksPosts))
+        : null;
       
-      if (!latestResult || !Array.isArray(latestResult.medsPosts)) {
+      if (!latestResult || !Array.isArray(latestResult.greeksPosts)) {
         console.log('No valid greek mentions found in data');
         return NextResponse.json(
           { error: 'No valid greek mentions available' },
@@ -51,7 +68,7 @@ export async function GET() {
       }
 
       // Convert posts to the format expected by StagePost
-      const formattedPosts = latestResult.medsPosts.map((post: MedsPost) => ({
+      const formattedPosts = latestResult.greeksPosts.map((post: GreeksPost) => ({
         no: post.postId,
         time: Math.floor(post.timestamp / 1000),
         name: post.name,

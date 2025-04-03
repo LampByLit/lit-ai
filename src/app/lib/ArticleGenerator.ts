@@ -50,7 +50,7 @@ Your task is to analyze a thread of posts and generate:
 1. A clear, concise headline of 4 to 6 words.
 2. A detailed article summarizing the key points and themes (175 - 200 words).
 
-Focus on identifying paranoid and delusional thought patterns, conspiracy theories, and extreme beliefs.
+Focus on identifying pseudointellectual thought patterns, book recommendations, and other topics and events.
 Maintain a neutral, academic tone.
 Always directly quote comments verbatim in quotation marks.
 Be sure to include lots of quotes.
@@ -82,7 +82,7 @@ ARTICLE: [your article]`
   }
 
   private async analyzeDelusionalContent(posts: string[]): Promise<ArticleStats> {
-    console.log('Analyzing posts for delusional content...');
+    console.log('Analyzing posts for pseudointellectual content...');
     
     const response = await this.client.chat({
       model: 'deepseek-chat',
@@ -90,22 +90,21 @@ ARTICLE: [your article]`
         {
           role: 'system',
           content: `You are an expert psychiatrist analyzing online discussions.
-Your task is to identify posts that exhibit signs of paranoid or delusional thinking.
+Your task is to identify posts that exhibit signs of pseudointellectual thinking.
 Common indicators include:
-- Conspiracy theories
-- Persecution complexes
-- Grandiose delusions
-- Bizarre beliefs without evidence
-- Extreme paranoia
-- Disorganized thinking
+- Using jargon and complex language
+- Lack of genuine knowledge
+- Pretending to be an expert
+- Repeating ideas without understanding
+- Lack of curiosity
 
-For each post, determine if it shows clear signs of delusional content. Be very liberal with your interpretation.
+For each post, determine if it shows clear signs of pseudointellectual content. Be very liberal with your interpretation.
 Maintain strict clinical objectivity.
-Respond with ONLY a number indicating how many posts contain clear delusional content.`
+Respond with ONLY a number indicating how many posts contain clear pseudointellectual content.`
         },
         {
           role: 'user',
-          content: `Analyze these ${posts.length} posts for delusional content:\n\n${posts.join('\n\n')}`
+          content: `Analyze these ${posts.length} posts for pseudointellectual content:\n\n${posts.join('\n\n')}`
         }
       ],
       temperature: 0.3
