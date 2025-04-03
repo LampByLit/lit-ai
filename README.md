@@ -1,10 +1,10 @@
-# xpara-ai 🔮
+# lit-ai 🔮
 
-AI-powered analysis and summarization tool for 4chan's /x/ paranormal board. This tool scrapes, analyzes, and summarizes discussions about paranormal phenomena, conspiracy theories, and unexplained events.
+AI-powered analysis and summarization tool for 4chan's /pol/ board. This tool scrapes, analyzes, and summarizes discussions and trends.
 
 ## Features 🌟
 
-- Real-time scraping of 4chan's /x/ board
+- Real-time scraping of 4chan's /pol/ board
 - AI-powered summarization of threads using DeepSeek AI
 - Content analysis and trend detection
 - Material Design UI for easy navigation
@@ -31,8 +31,8 @@ AI-powered analysis and summarization tool for 4chan's /x/ paranormal board. Thi
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/hxkm/xpara-ai.git
-cd xpara-ai
+git clone https://github.com/hxkm/lit-ai.git
+cd lit-ai
 ```
 
 2. Install dependencies:
@@ -56,7 +56,7 @@ npm run dev
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run scrape` - Run the /x/ board scraper
+- `npm run scrape` - Run the board scraper
 - `npm run summarize` - Generate summaries for collected threads
 - `npm run schedule` - Run scheduled tasks
 - `npm run cleanup` - Clean up data directories
