@@ -38,19 +38,19 @@ export async function GET() {
 
     try {
       const data = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
-      console.log('Successfully read meds data file');
+      console.log('Successfully read greeks data file');
       
       const latestResult = Array.isArray(data.results) ? data.results[0] : null;
       
       if (!latestResult || !Array.isArray(latestResult.medsPosts)) {
-        console.log('No valid meds posts found in data');
+        console.log('No valid greek mentions found in data');
         return NextResponse.json(
-          { error: 'No valid meds data available' },
+          { error: 'No valid greek mentions available' },
           { status: 404 }
         );
       }
 
-      // Convert meds posts to the format expected by StagePost
+      // Convert posts to the format expected by StagePost
       const formattedPosts = latestResult.medsPosts.map((post: MedsPost) => ({
         no: post.postId,
         time: Math.floor(post.timestamp / 1000),
@@ -60,17 +60,17 @@ export async function GET() {
         threadId: post.threadId
       }));
 
-      console.log(`Returning ${formattedPosts.length} formatted meds posts`);
+      console.log(`Returning ${formattedPosts.length} formatted greek mentions`);
       return NextResponse.json(formattedPosts);
     } catch (error) {
-      console.error('Error reading meds results:', error);
+      console.error('Error reading greeks data:', error);
       return NextResponse.json(
-        { error: 'Failed to read meds data' },
+        { error: 'Failed to read greeks data' },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('Error in meds API:', error);
+    console.error('Error in greeks API:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

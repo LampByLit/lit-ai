@@ -65,7 +65,7 @@ export default function Card6() {
   if (!data.medsPosts || data.medsPosts.length === 0) {
     return (
       <>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Greeks Recommended</h2>
         <div style={{ 
           display: 'flex', 
           flexDirection: 'column', 
@@ -77,9 +77,9 @@ export default function Card6() {
           borderRadius: '8px',
           border: '1px dashed #444'
         }}>
-          <p style={{ marginBottom: '1rem' }}>No Prescriptions Found</p>
+          <p style={{ marginBottom: '1rem' }}>No Recommendations Found</p>
           <p style={{ fontSize: '0.875rem', color: '#666' }}>
-            No medication-related posts in recent threads
+            No greek-related recommendations in recent threads
           </p>
         </div>
       </>
@@ -88,7 +88,7 @@ export default function Card6() {
 
   return (
     <>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Meds Prescribed</h2>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Greeks Recommended</h2>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
         <StagePost position="top" cardType="meds" />
         <StagePost position="middle" cardType="meds" />
