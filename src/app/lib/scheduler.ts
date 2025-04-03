@@ -114,7 +114,7 @@ export class Scheduler {
     console.log('Initializing scheduled jobs...');
     
     // Schedule jobs at specific times
-    this.scrapeJob = cron.schedule('0 */2 * * *', async () => {
+    this.scrapeJob = cron.schedule('30 */2 * * *', async () => {
       console.log('Triggering scheduled scraper job');
       await runScraperJob().catch(error => {
         console.error('Scraper job error:', error);
@@ -124,7 +124,7 @@ export class Scheduler {
       timezone: 'UTC'
     });
 
-    this.summarizeJob = cron.schedule('30 21 * * *', async () => {
+    this.summarizeJob = cron.schedule('30 17 * * *', async () => {
       console.log('Triggering scheduled summarizer job');
       await runSummarizerJob().catch(error => {
         console.error('Summarizer job error:', error);
@@ -135,8 +135,8 @@ export class Scheduler {
     });
 
     console.log('Jobs initialized with schedules:');
-    console.log('- Scraper: every 2 hours (0 */2 * * *)');
-    console.log('- Summarizer: daily at 21:30 UTC (30 21 * * *)');
+    console.log('- Scraper: every 2 hours at :30 (30 */2 * * *)');
+    console.log('- Summarizer: daily at 17:30 UTC (30 17 * * *)');
   }
 
   async start(): Promise<void> {

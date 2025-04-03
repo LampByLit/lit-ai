@@ -18,7 +18,11 @@
 # misc
 .DS_Store
 *.pem
-.env*
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # debug
 npm-debug.log*
@@ -38,8 +42,8 @@ yarn-error.log*
 /data/articles/
 
 # IDE
-.idea
-.vscode
+.vscode/
+.idea/
 *.swp
 *.swo
 

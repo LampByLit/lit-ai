@@ -8,14 +8,14 @@ import axios from 'axios';
 import crypto from 'crypto';
 
 /**
- * Analyzer for downloading and managing media files from /x/ board
+ * Analyzer for downloading and managing media files from /lit/ board
  */
 export class MediaAnalyzer extends BaseAnalyzer<MediaAnalyzerResult> {
   name = 'media';
   description = 'Downloads and manages media files from threads';
 
   // Base URL for 4chan media
-  private static MEDIA_BASE_URL = 'https://i.4cdn.org/x';
+  private static MEDIA_BASE_URL = 'https://i.4cdn.org/lit';
 
   // Maximum age of files (72 hours in milliseconds)
   private static MAX_FILE_AGE = 72 * 60 * 60 * 1000;

@@ -1,5 +1,5 @@
 /**
- * 4chan /x/ Scraper
+ * 4chan /lit/ Scraper
  * 
  * This module handles fetching thread data from 4chan's API
  * following their rate limiting and API requirements.
@@ -14,8 +14,8 @@ import { Thread, Post, isAxiosError } from '../../types/interfaces';
 import { initializeAnalyzers, analyzeThreads, purgeOldResults } from '../analyzers';
 
 // Base URL for 4chan API
-const API_BASE_URL = 'https://a.4cdn.org/x';
-const MEDIA_BASE_URL = 'https://i.4cdn.org/x';
+const API_BASE_URL = 'https://a.4cdn.org/lit';
+const MEDIA_BASE_URL = 'https://i.4cdn.org/lit';
 
 // Configuration
 const MAX_THREADS_PER_CATEGORY = 25; // Increased to capture more paranormal discussions
@@ -331,7 +331,7 @@ async function cleanOldThreads(): Promise<void> {
  * Main scraper function
  */
 async function scrape(): Promise<void> {
-  console.log('Starting 4chan /x/ scraper...');
+  console.log('Starting 4chan /lit/ scraper...');
   
   // Ensure our data directories exist
   ensureDirectories();

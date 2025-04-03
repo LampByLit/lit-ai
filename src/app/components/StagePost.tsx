@@ -24,7 +24,7 @@ interface StagePostProps {
   cardType?: 'gets' | 'insights' | 'meds';
 }
 
-function parseComment(html: string): React.ReactNode {
+function parseComment(html: string, threadId?: number): React.ReactNode {
   // Convert HTML to text first
   const div = document.createElement('div');
   div.innerHTML = html;
@@ -72,7 +72,7 @@ function parseComment(html: string): React.ReactNode {
             return (
               <a
                 key={index}
-                href={`https://archive.4plebs.org/x/post/${segment}/`}
+                href={`https://warosu.org/lit/thread/${threadId || segment}#p${segment}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.postNumber}
@@ -277,19 +277,19 @@ export default function StagePost({ position, cardType = 'gets' }: StagePostProp
     );
   }
 
-  const parsedComment = data.comment ? parseComment(data.comment) : '';
+  const parsedComment = data.comment ? parseComment(data.comment, data.threadId) : '';
 
   return (
     <div className={styles.stagePost}>
       <div className={styles.header}>
         <span className={styles.name}>Anonymous</span>
         <a 
-          href={`https://archive.4plebs.org/x/post/${data.postNumber}/`}
+          href={`https://warosu.org/lit/thread/${data.threadId || data.postNumber}#p${data.postNumber}`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.postNumber}
         >
-          No.{data.postNumber}
+          {data.postNumber}
         </a>
       </div>
       <div className={styles.comment}>

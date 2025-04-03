@@ -30,7 +30,7 @@
 .main {
   min-height: 100vh;
   width: 100%;
-  background-color: #000000;
+  background-color: #D7C3F1;
   padding: 64px 24px 0 24px;
   display: flex;
   flex-direction: column;
@@ -172,13 +172,14 @@ a.secondary {
 }
 
 .pinkCard {
-  background: #A63D40 !important; /* Deep burgundy */
-  color: #E9B872 !important; /* Warm terra cotta */
+  background: #00ff95 !important; /* Bright mint green */
+  color: #171717 !important; /* Dark gray for better contrast */
 }
 
 .pinkCard h2 {
   font-size: 1.25rem;
   margin-bottom: 1rem;
+  color: #171717 !important;
 }
 
 .pinkCard p {
@@ -189,11 +190,46 @@ a.secondary {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
+  color: #171717 !important;
+}
+
+.pinkCard p .level {
+  font-size: 1rem;
+  font-weight: normal;
+  opacity: 0.8;
+  color: #171717 !important;
+}
+
+.pinkCard p .trend {
+  font-size: 0.875rem;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+  display: block;
+  color: #171717 !important;
+}
+
+/* Override the global .level and .trend classes for pinkCard */
+.pinkCard :global(.level),
+.pinkCard :global(.trend) {
+  color: #171717 !important;
+}
+
+.pinkCard .level {
+  font-size: 1rem;
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+.pinkCard .trend {
+  font-size: 0.875rem;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+  display: block;
 }
 
 .neonCard {
-  background: #1a1a1a !important; /* Dark grey */
-  color: #E9B872 !important; /* Warm terra cotta */
+  background: #4d0038 !important; /* Dark grey */
+  color: #ffffff !important; /* Warm terra cotta */
 }
 
 .neonCard h2 {
@@ -246,8 +282,8 @@ a.secondary {
 }
 
 .cyanCard {
-  background: #3C787E !important; /* Muted teal */
-  color: #E9B872 !important; /* Warm terra cotta */
+  background: #ff6600 !important; /* Bright orange */
+  color: #ffffff !important; /* White text for contrast */
 }
 
 .cyanCard h2 {
@@ -256,8 +292,8 @@ a.secondary {
 }
 
 .orangeCard {
-  background: #1a1a1a !important; /* Dark grey */
-  color: #E9B872 !important; /* Warm terra cotta */
+  background: #4d0038 !important; /* Dark grey */
+  color: #ffffff !important; /* Warm terra cotta */
 }
 
 .orangeCard h2 {
@@ -291,7 +327,7 @@ a.secondary {
 }
 
 .blackCard {
-  background: #000000 !important; /* Pure black */
+  background: #D7C3F1 !important; /* Pure black */
   color: #E9B872 !important; /* Warm terra cotta */
 }
 

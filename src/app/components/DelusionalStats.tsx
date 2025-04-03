@@ -39,27 +39,27 @@ export const DelusionalStats = () => {
 
   if (loading) {
     return (
-      <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
-        <div className={styles.loading}>Loading stats...</div>
+      <div style={{ padding: '1rem' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+        <div style={{ color: '#171717' }}>Loading stats...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
-        <div className={styles.error}>{error}</div>
+      <div style={{ padding: '1rem' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+        <div style={{ color: '#171717' }}>{error}</div>
       </div>
     );
   }
 
   if (!stats) {
     return (
-      <div className={styles.statsContainer}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
-        <div className={styles.error}>No stats available</div>
+      <div style={{ padding: '1rem' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+        <div style={{ color: '#171717' }}>No stats available</div>
       </div>
     );
   }
@@ -69,15 +69,16 @@ export const DelusionalStats = () => {
   const trendColor = trend.direction === 'up' ? '#ff4444' : trend.direction === 'down' ? '#44ff44' : '#ffffff';
 
   return (
-    <div className={styles.statsContainer}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left' }}>Schizophrenia Per Post</h2>
-      <div className={styles.statsContent}>
-        <div className={styles.mainStat}>
-          <div style={{ fontSize: '4rem', lineHeight: '1', fontWeight: 'bold' }}>
-            {percentage.toFixed(1)}% <span style={{ fontSize: '1rem' }}>{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+    <div style={{ padding: '1rem' }}>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div>
+          <div style={{ fontSize: '4rem', lineHeight: '1', fontWeight: 'bold', color: '#171717', display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+            {percentage.toFixed(1)}%
+            <span style={{ fontSize: '1rem', color: '#171717' }}>{level.charAt(0).toUpperCase() + level.slice(1)}</span>
           </div>
         </div>
-        <div className={styles.trendStat} style={{ color: trendColor }}>
+        <div style={{ fontSize: '1.5rem', color: '#171717', fontWeight: '500' }}>
           {trendSymbol} {trend.amount.toFixed(1)}%
         </div>
       </div>
