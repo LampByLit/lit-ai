@@ -1,10 +1,10 @@
 # lit-ai 🔮
 
-AI-powered analysis and summarization tool for 4chan's /pol/ board. This tool scrapes, analyzes, and summarizes discussions and trends.
+AI-powered analysis and summarization tool for 4chan's /lit/ board. This tool scrapes, analyzes, and summarizes literary discussions, book recommendations, and philosophical debates.
 
 ## Features 🌟
 
-- Real-time scraping of 4chan's /pol/ board
+- Real-time scraping of 4chan's /lit/ board
 - AI-powered summarization of threads using DeepSeek AI
 - Content analysis and trend detection
 - Material Design UI for easy navigation
@@ -56,7 +56,7 @@ npm run dev
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run scrape` - Run the board scraper
+- `npm run scrape` - Run the /lit/ board scraper
 - `npm run summarize` - Generate summaries for collected threads
 - `npm run schedule` - Run scheduled tasks
 - `npm run cleanup` - Clean up data directories
