@@ -122,7 +122,7 @@ export class DelusionalMatrixAnalyzer {
         messages: [
           {
             role: 'system',
-            content: `You are an academic researcher analyzing paranoid and delusional content patterns.
+            content: `You are an academic researcher analyzing pseudointellectual content patterns.
 Your task is to identify exactly 5 dominant themes in the provided content.
 For each theme:
 1. Provide a clear, specific name

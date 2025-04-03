@@ -36,7 +36,7 @@ export default function Home() {
   const contentCards: ContentCard[] = Array.from({ length: 25 }, (_, i) => ({
     id: `content-${i}`,
     type: 'content',
-    title: i === 0 ? 'Delusional Content Per Post' : 
+    title: i === 0 ? 'Pseudointellectualism Per Post' : 
            i === 1 ? 'Most Significant GETs' :
            i === 4 ? 'Key Insights' :
            i === 6 ? 'Real-time GCP Dot' :

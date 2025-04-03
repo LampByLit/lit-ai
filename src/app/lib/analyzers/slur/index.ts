@@ -3,18 +3,18 @@ import { BaseAnalyzer } from '../base';
 import { SlurAnalyzerResult, MedsPost } from './types';
 
 /**
- * Analyzer for tracking occurrences of "meds" in posts
+ * Analyzer for tracking occurrences of "greeks" in posts
  */
 export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   name = 'slur';
-  description = 'Tracks occurrences of "meds" mentions in posts';
+  description = 'Tracks occurrences of "greeks" mentions in posts';
 
   // Term to track (case-insensitive)
-  private static TRACKED_TERM = 'meds';
+  private static TRACKED_TERM = 'greeks';
   private static MAX_POSTS = 3;
 
   /**
-   * Check if text contains the word "meds"
+   * Check if text contains the word "greeks"
    */
   private hasMeds(text: string): boolean {
     const regex = new RegExp(`\\b${SlurAnalyzer.TRACKED_TERM}\\b`, 'gi');
@@ -22,7 +22,7 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   }
 
   /**
-   * Process a post to track meds mentions
+   * Process a post to track greeks mentions
    */
   private processPost(
     post: Post,
@@ -44,10 +44,10 @@ export class SlurAnalyzer extends BaseAnalyzer<SlurAnalyzerResult> {
   }
 
   /**
-   * Analyze threads for meds mentions
+   * Analyze threads for greeks mentions
    */
   async analyze(threads: Thread[]): Promise<SlurAnalyzerResult[]> {
-    console.log('Starting meds analysis...');
+    console.log('Starting greeks analysis...');
     
     const medsPostsSet = new Set<MedsPost>();
     let totalPosts = 0;
