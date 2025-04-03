@@ -39,7 +39,7 @@ export const DelusionalStats = () => {
   if (loading) {
     return (
       <div style={{ padding: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Pseudointellectualism Per Post</h2>
         <div style={{ color: '#171717' }}>Loading stats...</div>
       </div>
     );
@@ -48,7 +48,7 @@ export const DelusionalStats = () => {
   if (error) {
     return (
       <div style={{ padding: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Pseudointellectualism Per Post</h2>
         <div style={{ color: '#171717' }}>{error}</div>
       </div>
     );
@@ -57,7 +57,7 @@ export const DelusionalStats = () => {
   if (!stats) {
     return (
       <div style={{ padding: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Pseudointellectualism Per Post</h2>
         <div style={{ color: '#171717' }}>No stats available</div>
       </div>
     );
@@ -68,7 +68,7 @@ export const DelusionalStats = () => {
 
   return (
     <div style={{ padding: '1rem' }}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Schizophrenia Per Post</h2>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'left', color: '#171717' }}>Pseudointellectualism Per Post</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
           <div style={{ fontSize: '4rem', lineHeight: '1', fontWeight: 'bold', color: '#171717', display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
