@@ -167,10 +167,10 @@ Always ask when you need further documentation or clarification.
 ## Project Context
 We want our project to be as simple and lightweight as possible while still performing all necessary functions.
 
-- This is a web scraping application that summarizes /pol/ image board content using Next.js App Router
-- The application needs to extract image board content with a complex web scraping tool
+- This is a web scraping application that summarizes /lit/ image board content using Next.js App Router
+- The application needs to extract literary discussions and book recommendations with a complex web scraping tool
 - Data is stored in JSON format in a /data directory structure
-- The application displays image board content in a summarized format using Material Design
+- The application displays literary content in a summarized format using Material Design
 - We must implement image board-friendly scraping to avoid blocking
 - The project will be deployed to railway.app after local development
 
@@ -405,7 +405,7 @@ We want our project to be as simple and lightweight as possible while still perf
 - Create Railway.app monitoring guidelines
 
 ## 4chan API Requirements (CRITICAL)
-- Base URL must be https://a.4cdn.org/pol
+- Base URL must be https://a.4cdn.org/lit
 - Never make concurrent requests from same IP
 - Implement 1 request per second rate limit
 - Use random delays between requests (3-10 seconds)
@@ -562,3 +562,13 @@ We want our project to be as simple and lightweight as possible while still perf
 8. Thou shalt monitor deployment logs
 9. Thou shalt backup data regularly
 10. Thou shalt document all Railway-specific configurations
+
+## Thread Analysis Focus
+- Identify literary discussions and book recommendations
+- Track philosophical and critical theory debates
+- Monitor author and work mentions
+- Analyze reading patterns and preferences
+- Track literary movement discussions
+- Identify academic and theoretical discourse
+- Monitor translation and language discussions
+- Track publishing industry discussions

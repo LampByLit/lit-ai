@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styles from './ArticleCard.module.css';
 
 interface DelusionalStats {
   level: 'low' | 'medium' | 'high' | 'extreme';
@@ -66,7 +65,6 @@ export const DelusionalStats = () => {
 
   const { level, percentage, trend } = stats;
   const trendSymbol = trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '↑';
-  const trendColor = trend.direction === 'up' ? '#ff4444' : trend.direction === 'down' ? '#44ff44' : '#ffffff';
 
   return (
     <div style={{ padding: '1rem' }}>
