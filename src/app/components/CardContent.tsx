@@ -160,19 +160,23 @@ export const CardContent: React.FC<CardContentProps> = ({ card }) => {
       return (
         <>
           <h2 style={{ 
-            fontSize: '2.5rem', 
-            marginBottom: '1rem', 
+            fontSize: '2rem', 
+            marginBottom: '2rem', 
             color: 'inherit',
             textAlign: 'center',
             width: '100%'
           }}>
-            2050 © &amp
+            Manual Controls
           </h2>
-          <div style={{ display: 'none' }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '1rem',
+            alignItems: 'center',
+            width: '100%'
+          }}>
             <ScraperButton />
-            <div style={{ marginTop: '1rem' }}>
-              <SummarizerButton />
-            </div>
+            <SummarizerButton />
           </div>
         </>
       );
