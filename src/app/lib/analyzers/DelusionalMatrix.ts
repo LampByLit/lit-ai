@@ -122,10 +122,10 @@ export class DelusionalMatrixAnalyzer {
         messages: [
           {
             role: 'system',
-            content: `You are an academic researcher analyzing pseudointellectual content patterns.
-Your task is to identify exactly 5 dominant themes in the provided content.
+            content: `You are an academic researcher analyzing recommendations on an online forum.
+Your task is to identify exactly 5 book or author recommendations.
 For each theme:
-1. Provide a clear, specific name
+1. Provide a clear, specific references to titles and names
 2. List 3-5 relevant keywords
 3. Note frequency (percentage of content this theme appears in)
 Do not include any commentary or recommendations.
@@ -143,7 +143,7 @@ Format your response as JSON matching this structure:
           },
           {
             role: 'user',
-            content: `Analyze these summaries and identify exactly 5 dominant paranoid/delusional themes:\n\n${prompt}`
+            content: `Analyze these summaries and identify exactly 5 book or author recommendations:\n\n${prompt}`
           }
         ],
         temperature: 0.3
@@ -165,7 +165,7 @@ Format your response as JSON matching this structure:
         return [];
       }
 
-      console.log(`Successfully generated ${themeData.themes.length} themes`);
+      console.log(`Successfully generated ${themeData.themes.length} recs`);
       
       // Add empty examples array - examples will be populated in a future update
       return themeData.themes.map(theme => ({
@@ -188,7 +188,7 @@ Format your response as JSON matching this structure:
       return `Thread ${article.threadId}:
 Headline: ${article.headline}
 Article: ${article.article}
-Delusional content: ${article.delusionalStats.delusionalComments} out of ${article.delusionalStats.analyzedComments} posts (${article.delusionalStats.percentage.toFixed(2)}%)`;
+Pseudointellectual content: ${article.delusionalStats.delusionalComments} out of ${article.delusionalStats.analyzedComments} posts (${article.delusionalStats.percentage.toFixed(2)}%)`;
     }).join('\n\n');
   }
 
@@ -272,7 +272,7 @@ Delusional content: ${article.delusionalStats.delusionalComments} out of ${artic
   }
 
   async analyze(articles: ArticleAnalysis[]): Promise<DelusionalMatrix> {
-    console.log('\nGenerating delusional content matrix...');
+    console.log('\nGenerating pseudointellectual content matrix...');
     
     try {
       // Run all analysis steps in parallel
