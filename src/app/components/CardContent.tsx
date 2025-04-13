@@ -9,7 +9,6 @@ import Card6 from './Card6';
 import { ArticleCard } from './ArticleCard';
 import BigPictureArticle from './BigPictureArticle';
 import SparklingLogo from './SparklingLogo';
-import { GCPDotCard } from './GCPDotCard';
 import { ThreadCount } from './ThreadCount';
 import { ScraperButton } from './ScraperButton';
 import { SummarizerButton } from './SummarizerButton';

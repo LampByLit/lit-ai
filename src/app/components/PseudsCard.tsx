@@ -120,7 +120,7 @@ export default function PseudsCard() {
                 no: post.postId
               }} 
               position={index === 0 ? 'top' : index === randomPosts.length - 1 ? 'bottom' : 'middle'} 
-              cardType="insights" 
+              cardType="pseuds" 
             />
           );
         })}

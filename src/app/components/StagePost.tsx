@@ -24,7 +24,7 @@ interface Get {
 
 interface StagePostProps {
   position: 'top' | 'middle' | 'bottom';
-  cardType?: 'gets' | 'insights' | 'meds' | 'greeks';
+  cardType?: 'gets' | 'insights' | 'meds' | 'greeks' | 'pseuds';
   post?: Get;  // Add post prop for direct data passing
 }
 
@@ -329,24 +329,26 @@ export default function StagePost({ position, cardType = 'gets', post }: StagePo
         )}
         {parsedComment || <span className={styles.placeholderComment}>&gt;pic related</span>}
       </div>
-      <div className={styles.footer}>
-        {cardType === 'insights' ? (
-          <span className={styles.checkCount}>
-            {data.checkCount} {data.checkCount === 1 ? 'Reply' : 'Replies'}
-          </span>
-        ) : cardType === 'meds' || cardType === 'greeks' ? (
-          <span className={styles.timestamp}>
-            {data.time ? new Date(data.time * 1000).toLocaleString() : 'No timestamp'}
-          </span>
-        ) : (
-          <>
-            <span className={styles.getType}>
-              {data.getType.charAt(0).toUpperCase() + data.getType.slice(1).toLowerCase()} •
+      {cardType !== 'pseuds' && (
+        <div className={styles.footer}>
+          {cardType === 'insights' ? (
+            <span className={styles.checkCount}>
+              {data.checkCount} {data.checkCount === 1 ? 'Reply' : 'Replies'}
             </span>
-            <span className={styles.checkCount}>{formatCheckCount(data.checkCount)}</span>
-          </>
-        )}
-      </div>
+          ) : cardType === 'meds' || cardType === 'greeks' ? (
+            <span className={styles.timestamp}>
+              {data.time ? new Date(data.time * 1000).toLocaleString() : 'No timestamp'}
+            </span>
+          ) : (
+            <>
+              <span className={styles.getType}>
+                {data.getType.charAt(0).toUpperCase() + data.getType.slice(1).toLowerCase()} •
+              </span>
+              <span className={styles.checkCount}>{formatCheckCount(data.checkCount)}</span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 } 

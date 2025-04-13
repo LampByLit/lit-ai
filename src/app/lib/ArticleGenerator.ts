@@ -152,7 +152,7 @@ Format: {"count": number, "examples": ["post1", "post2"]}`
         try {
           const fileContent = await fs.readFile(pseudsPath, 'utf-8');
           existingData = JSON.parse(fileContent);
-        } catch (error) {
+        } catch {
           // File doesn't exist or is invalid, start fresh
         }
 
