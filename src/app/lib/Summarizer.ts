@@ -74,7 +74,7 @@ export class Summarizer {
         const currentStats = await fs.readFile(delusionalStatsPath, 'utf-8');
         // Move current stats to previous
         await fs.writeFile(previousDelusionalStatsPath, currentStats);
-      } catch (error) {
+      } catch {
         // If current stats don't exist, that's okay
         console.log('No existing stats to move to previous');
       }
