@@ -120,7 +120,13 @@ export default function PseudsCard() {
                 no: post.postId
               }} 
               position={index === 0 ? 'top' : index === randomPosts.length - 1 ? 'bottom' : 'middle'} 
-              cardType="pseuds" 
+              cardType="pseuds"
+              customStyles={{
+                background: '#006B3D', // Match the green background
+                textColor: '#FFFFFF', // High contrast white text
+                linkColor: '#00FF9D', // Bright green for links/post numbers
+                quoteColor: '#FFA500' // Orange for greentext
+              }}
             />
           );
         })}

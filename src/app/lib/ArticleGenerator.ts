@@ -146,7 +146,7 @@ Format: {"count": number, "examples": ["post1", "post2"]}`
     
     // Save examples to pseuds.json
     if (examples.length > 0) {
-      const pseudsPath = path.resolve(process.cwd(), 'data', 'pseuds.json');
+      const pseudsPath = path.resolve(paths.dataDir, 'pseuds.json');
       try {
         let existingData: PseudointellectualPost[] = [];
         try {
@@ -157,12 +157,20 @@ Format: {"count": number, "examples": ["post1", "post2"]}`
         }
 
         // Add new examples with metadata
-        const newExamples: PseudointellectualPost[] = examples.map((content: string, index: number) => ({
-          threadId: threadId || `thread-${Date.now()}-${index}`, // Use actual threadId or generate unique one
-          postId: index,
-          content,
-          timestamp: Date.now()
-        }));
+        const newExamples: PseudointellectualPost[] = examples.map((content: string) => {
+          // Find the post with this content in the thread
+          const post = posts.find(p => p.includes(content));
+          // Extract post number from the post content using regex
+          const postNoMatch = post?.match(/No\.\s*(\d+)/);
+          const postNo = postNoMatch ? parseInt(postNoMatch[1]) : Date.now();
+          
+          return {
+            threadId: threadId || `thread-${Date.now()}`,
+            postId: postNo,
+            content,
+            timestamp: Date.now()
+          };
+        });
 
         // Data retention logic
         const MAX_EXAMPLES = 100; // Maximum number of examples to keep

@@ -26,6 +26,12 @@ interface StagePostProps {
   position: 'top' | 'middle' | 'bottom';
   cardType?: 'gets' | 'insights' | 'meds' | 'greeks' | 'pseuds';
   post?: Get;  // Add post prop for direct data passing
+  customStyles?: {
+    background?: string;
+    textColor?: string;
+    linkColor?: string;
+    quoteColor?: string;
+  };
 }
 
 function parseComment(html: string, threadId?: number): React.ReactNode {
@@ -111,7 +117,7 @@ function formatCheckCount(count: number): string {
   return `Checked ${count} times`;
 }
 
-export default function StagePost({ position, cardType = 'gets', post }: StagePostProps) {
+export default function StagePost({ position, cardType = 'gets', post, customStyles }: StagePostProps) {
   const [data, setData] = useState<Get | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -311,23 +317,37 @@ export default function StagePost({ position, cardType = 'gets', post }: StagePo
   const parsedComment = data.comment ? parseComment(data.comment, data.threadId) : '';
 
   return (
-    <div className={styles.stagePost}>
+    <div className={styles.stagePost} style={customStyles ? {
+      backgroundColor: customStyles.background,
+      color: customStyles.textColor
+    } : undefined}>
       <div className={styles.header}>
-        <span className={styles.name}>Anonymous</span>
+        <span className={styles.name} style={customStyles ? {
+          color: customStyles.linkColor
+        } : undefined}>Anonymous</span>
         <a 
           href={`https://warosu.org/lit/thread/${data.threadId || data.postNumber}#p${data.postNumber}`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.postNumber}
+          style={customStyles ? {
+            color: customStyles.linkColor
+          } : undefined}
         >
           {data.postNumber}
         </a>
       </div>
-      <div className={styles.comment}>
+      <div className={styles.comment} style={customStyles ? {
+        color: customStyles.textColor
+      } : undefined}>
         {data.hasImage && (
-          <span className={styles.greentext}>&gt;pic related</span>
+          <span className={styles.greentext} style={customStyles ? {
+            color: customStyles.quoteColor
+          } : undefined}>&gt;pic related</span>
         )}
-        {parsedComment || <span className={styles.placeholderComment}>&gt;pic related</span>}
+        {parsedComment || <span className={styles.placeholderComment} style={customStyles ? {
+          color: customStyles.quoteColor
+        } : undefined}>&gt;pic related</span>}
       </div>
       {cardType !== 'pseuds' && (
         <div className={styles.footer}>
