@@ -15,6 +15,7 @@ import { ScraperButton } from './ScraperButton';
 import { SummarizerButton } from './SummarizerButton';
 import BlackCard from './BlackCard';
 import ChanCatalogView from './ChanCatalogView';
+import PseudsCard from './PseudsCard';
 
 type CardType = 'content' | 'control' | 'status';
 
@@ -85,12 +86,12 @@ export const CardContent: React.FC<CardContentProps> = ({ card }) => {
         return <Card6 />;
       }
       if (card.id === 'content-6') {
-        return <GCPDotCard title={card.title} />;
+        return <PseudsCard />;
       }
       if (card.id === 'content-7') {
         return (
           <>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'white' }}>Discourse Overview</h2>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'black' }}>Discourse Overview</h2>
             <BigPictureArticle />
           </>
         );

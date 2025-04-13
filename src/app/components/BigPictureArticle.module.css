@@ -8,7 +8,7 @@
   margin-bottom: 1rem;
   line-height: 1.6;
   font-size: 0.8rem;
-  color: white;
+  color: black;
   text-align: justify;
   text-justify: inter-word;
   font-weight: 500;
@@ -29,6 +29,6 @@
 .loading {
   text-align: center;
   padding: 1rem;
-  color: white;
+  color: black;
   font-size: 0.875rem;
 } 

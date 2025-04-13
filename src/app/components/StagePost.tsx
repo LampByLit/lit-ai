@@ -334,7 +334,7 @@ export default function StagePost({ position, cardType = 'gets', post }: StagePo
           <span className={styles.checkCount}>
             {data.checkCount} {data.checkCount === 1 ? 'Reply' : 'Replies'}
           </span>
-        ) : cardType === 'meds' ? (
+        ) : cardType === 'meds' || cardType === 'greeks' ? (
           <span className={styles.timestamp}>
             {data.time ? new Date(data.time * 1000).toLocaleString() : 'No timestamp'}
           </span>

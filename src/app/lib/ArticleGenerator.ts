@@ -12,6 +12,17 @@ const DEFAULT_CONFIG: ArticleGeneratorConfig = {
   presencePenalty: 0.5
 };
 
+interface PseudointellectualPost {
+  threadId: string;
+  postId: number;
+  content: string;
+  timestamp: number;
+}
+
+interface ExtendedArticleStats extends ArticleStats {
+  examples?: PseudointellectualPost[];
+}
+
 export class ArticleGenerator {
   private client: DeepSeekClient;
   private outputPath: string;
@@ -76,12 +87,12 @@ ARTICLE: [your article]`
       threadId,
       headline,
       article,
-      delusionalStats: await this.analyzeDelusionalContent(posts),
-        generatedAt: Date.now()
+      delusionalStats: await this.analyzeDelusionalContent(threadId, posts),
+      generatedAt: Date.now()
     };
   }
 
-  private async analyzeDelusionalContent(posts: string[]): Promise<ArticleStats> {
+  private async analyzeDelusionalContent(threadId: string, posts: string[]): Promise<ExtendedArticleStats> {
     console.log('Analyzing posts for pseudointellectual content...');
     
     const response = await this.client.chat({
@@ -100,7 +111,10 @@ Common indicators include:
 
 For each post, determine if it shows clear signs of pseudointellectual content. Be very liberal with your interpretation.
 Maintain strict clinical objectivity.
-Respond with ONLY a number indicating how many posts contain clear pseudointellectual content.`
+Return a JSON object with:
+1. count: number of posts with pseudointellectual content
+2. examples: array of up to 2 example posts that best demonstrate pseudointellectual thinking
+Format: {"count": number, "examples": ["post1", "post2"]}`
         },
         {
           role: 'user',
@@ -110,12 +124,95 @@ Respond with ONLY a number indicating how many posts contain clear pseudointelle
       temperature: 0.3
     });
 
-    const delusionalCount = parseInt(response.choices[0].message.content, 10) || 0;
+    let result;
+    try {
+      let content = response.choices[0].message.content;
+      
+      // Handle markdown code blocks
+      if (content.includes('```json')) {
+        content = content.split('```json')[1].split('```')[0].trim();
+      } else if (content.includes('```')) {
+        content = content.split('```')[1].split('```')[0].trim();
+      }
+      
+      result = JSON.parse(content);
+    } catch (error) {
+      console.error('Failed to parse AI response:', error);
+      result = { count: 0, examples: [] };
+    }
+
+    const delusionalCount = result.count || 0;
+    const examples = result.examples || [];
+    
+    // Save examples to pseuds.json
+    if (examples.length > 0) {
+      const pseudsPath = path.resolve(process.cwd(), 'data', 'pseuds.json');
+      try {
+        let existingData: PseudointellectualPost[] = [];
+        try {
+          const fileContent = await fs.readFile(pseudsPath, 'utf-8');
+          existingData = JSON.parse(fileContent);
+        } catch (error) {
+          // File doesn't exist or is invalid, start fresh
+        }
+
+        // Add new examples with metadata
+        const newExamples: PseudointellectualPost[] = examples.map((content: string, index: number) => ({
+          threadId: threadId || `thread-${Date.now()}-${index}`, // Use actual threadId or generate unique one
+          postId: index,
+          content,
+          timestamp: Date.now()
+        }));
+
+        // Data retention logic
+        const MAX_EXAMPLES = 100; // Maximum number of examples to keep
+        const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+        const now = Date.now();
+
+        // 1. Remove duplicates based on content
+        const uniqueExisting = existingData.filter((post, index, self) =>
+          index === self.findIndex((p) => p.content === post.content)
+        );
+
+        // 2. Remove old examples
+        const recentExisting = uniqueExisting.filter(
+          (post) => now - post.timestamp < MAX_AGE_MS
+        );
+
+        // 3. Combine with new examples and limit total
+        const updatedData = [...newExamples, ...recentExisting]
+          .slice(0, MAX_EXAMPLES)
+          .sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
+
+        // 4. Check file size and trim if needed
+        const jsonString = JSON.stringify(updatedData, null, 2);
+        const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+
+        if (jsonString.length > MAX_FILE_SIZE) {
+          // If file is too large, keep only the most recent examples that fit
+          let trimmedData = updatedData;
+          while (JSON.stringify(trimmedData, null, 2).length > MAX_FILE_SIZE && trimmedData.length > 0) {
+            trimmedData = trimmedData.slice(0, -1);
+          }
+          await fs.writeFile(pseudsPath, JSON.stringify(trimmedData, null, 2));
+        } else {
+          await fs.writeFile(pseudsPath, jsonString);
+        }
+      } catch (error) {
+        console.error('Failed to save pseudointellectual examples:', error);
+      }
+    }
     
     return {
       analyzedComments: posts.length,
       delusionalComments: delusionalCount,
-      percentage: (delusionalCount / posts.length) * 100
+      percentage: (delusionalCount / posts.length) * 100,
+      examples: examples.map((content: string, index: number) => ({
+        threadId: threadId || `thread-${Date.now()}-${index}`,
+        postId: index,
+        content,
+        timestamp: Date.now()
+      }))
     };
   }
 
