@@ -67,6 +67,19 @@ export class Summarizer {
 
       // Save delusional stats separately
       const delusionalStatsPath = path.resolve(paths.dataDir, 'analysis', 'latest-delusional.json');
+      const previousDelusionalStatsPath = path.resolve(paths.dataDir, 'analysis', 'previous-delusional.json');
+
+      // Try to read current stats before overwriting
+      try {
+        const currentStats = await fs.readFile(delusionalStatsPath, 'utf-8');
+        // Move current stats to previous
+        await fs.writeFile(previousDelusionalStatsPath, currentStats);
+      } catch (error) {
+        // If current stats don't exist, that's okay
+        console.log('No existing stats to move to previous');
+      }
+
+      // Save new stats
       const delusionalStats = {
         statistics: {
           analyzedComments: summary.articles.batchStats.totalAnalyzedPosts,

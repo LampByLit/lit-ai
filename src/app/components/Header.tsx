@@ -27,21 +27,27 @@ export const Header = () => {
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           aria-expanded={isDropdownOpen}
         >
-          /x/ ▾
+          /lit/ ▾
         </button>
         {isDropdownOpen && (
           <div className={styles.dropdown}>
             <a 
-              href="https://xpara-ai-production.up.railway.app/"
+              href="https://lit-ai-production.up.railway.app/"
               className={styles.dropdownItem}
             >
-              /x/
+              /lit/
             </a>
             <a 
               href="https://pol-ai-production.up.railway.app/"
               className={styles.dropdownItem}
             >
               /pol/
+            </a>
+            <a 
+              href="https://xpara-ai-production.up.railway.app/"
+              className={styles.dropdownItem}
+            >
+              /x/
             </a>
           </div>
         )}
