@@ -39,7 +39,7 @@ export default function Home() {
     title: i === 0 ? 'Pseudointellectualism Per Post' : 
            i === 1 ? 'Most Significant GETs' :
            i === 4 ? 'Key Insights' :
-           i === 6 ? 'Real-time GCP Dot' :
+           i === 6 ? 'Unsubstantiated Claims to Knowledge' :
            i === 8 ? '' :
            i === 9 ? 'Thread Count' :
            i === 11 ? '' :
