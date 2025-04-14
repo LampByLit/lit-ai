@@ -59,7 +59,7 @@ export class ArticleGenerator {
           content: `You are an expert journalist summarizing online discussions.
 Your task is to analyze a thread of posts and generate:
 1. A clear, concise headline of 4 to 6 words.
-2. A detailed article summarizing the key points and themes (175 - 200 words).
+2. A detailed article summarizing the key points and themes (100 - 150 words).
 
 Focus on identifying pseudointellectual thought patterns, book recommendations, and other topics and events.
 Maintain a neutral, academic tone.
@@ -109,7 +109,7 @@ Common indicators include:
 - Repeating ideas without understanding
 - Lack of curiosity
 
-For each post, determine if it shows clear signs of pseudointellectual content. Be very liberal with your interpretation.
+For each post, determine if it shows clear signs of pseudointellectual content. Be liberal with your interpretation.
 Maintain strict clinical objectivity.
 Return a JSON object with:
 1. count: number of posts with pseudointellectual content
