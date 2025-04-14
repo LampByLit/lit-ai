@@ -5,7 +5,7 @@ export default function BlackCard() {
   const [tweetId, setTweetId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('https://xposter-production.up.railway.app/latest/xpara')
+    fetch('https://xposter-production.up.railway.app/latest/lit')
       .then(res => res.text())
       .then(url => {
         const id = url.split('status/')[1];
