@@ -160,16 +160,16 @@ export const CardContent: React.FC<CardContentProps> = ({ card }) => {
       return (
         <>
           <h2 style={{ 
-            fontSize: '2rem', 
+            fontSize: '3rem', 
             marginBottom: '2rem', 
             color: 'inherit',
             textAlign: 'center',
             width: '100%'
           }}>
-            Manual Controls
+            2050 © &amp
           </h2>
           <div style={{ 
-            display: 'flex', 
+            display: 'none', 
             flexDirection: 'column', 
             gap: '1rem',
             alignItems: 'center',

@@ -18,14 +18,14 @@ export default function BlackCard() {
       width: '100%',
       height: '100%',
       minHeight: '400px',
-      backgroundColor: '#1a1a1a',
+      backgroundColor: '#ffffff',
       borderRadius: '8px',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       padding: '1rem'
     }}>
-      {tweetId ? <Tweet id={tweetId} /> : <div style={{ color: '#fff' }}>Loading...</div>}
+      {tweetId ? <Tweet id={tweetId} /> : <div style={{ color: '#000' }}>Loading...</div>}
     </div>
   );
 } 
