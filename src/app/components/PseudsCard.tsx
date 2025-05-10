@@ -109,7 +109,7 @@ export default function PseudsCard() {
           
           return (
             <StagePost 
-              key={`${post.threadId}-${post.postId}-${post.timestamp}`}
+              key={`${post.threadId}-${post.postId}-${post.timestamp}-${index}`}
               post={{
                 postNumber: post.postId.toString(),
                 comment: post.content,

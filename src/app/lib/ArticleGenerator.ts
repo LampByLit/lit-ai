@@ -136,8 +136,8 @@ Format: {"count": number, "examples": ["post1", "post2"]}`
       }
       
       result = JSON.parse(content);
-    } catch (error) {
-      console.error('Failed to parse AI response:', error);
+    } catch {
+      console.error('Failed to parse AI response');
       result = { count: 0, examples: [] };
     }
 
@@ -206,8 +206,8 @@ Format: {"count": number, "examples": ["post1", "post2"]}`
         } else {
           await fs.writeFile(pseudsPath, jsonString);
         }
-      } catch (error) {
-        console.error('Failed to save pseudointellectual examples:', error);
+      } catch {
+        console.error('Failed to save pseudointellectual examples');
       }
     }
     
