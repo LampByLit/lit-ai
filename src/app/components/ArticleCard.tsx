@@ -81,7 +81,7 @@ function FitText({ text, threadId }: { text: string; threadId: number }) {
       <a 
         ref={textRef} 
         className={styles.headline}
-        href={`https://archive.4plebs.org/x/thread/${threadId}`}
+        href={`https://warosu.org/lit/thread/${threadId}`}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -146,7 +146,7 @@ export function ArticleCard({ article: propArticle, index = 0 }: ArticleCardProp
       <div className={styles.content}>{processQuotes(content)}</div>
       <div className={styles.stats}>
         <a 
-          href={`https://archive.4plebs.org/x/thread/${article.threadId}`}
+          href={`https://warosu.org/lit/thread/${article.threadId}`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.statsLink}
