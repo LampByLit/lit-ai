@@ -101,3 +101,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with Next.js
 - Powered by DeepSeek AI
 - Deployed on Railway.app
+
+## Environment Variables
+
+### Required Variables
+- `DEEPSEEK_API_KEY`: Your DeepSeek API key for AI processing
+
+### Optional Variables
+- `SKIP_DATA_CLEANUP`: Set to 'true' to prevent data cleanup on startup. Default is false (cleanup enabled).
+- `DATA_DIR`: Base directory for data storage (defaults to './data' in development, '/data' in Railway)
