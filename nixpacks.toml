@@ -1,5 +1,6 @@
 [phases.setup]
 nixPkgs = ["nodejs"]
+# Force Railway redeploy to use start:combined script
 
 [phases.install]
 cmds = ["npm install"]
